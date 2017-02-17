@@ -9,6 +9,18 @@ extern int yylineno;
 extern char *yytext;
 
 
+/*funciones y estructuras para handle de tipos */
+
+char tipos[20][40];
+int contTipos = 0;
+
+int insertarTipo(char tipo[]);
+int resetTipos();
+int compararTipos(char *a, char *b);
+int validarTipos(char tipo[]) ;
+
+/*fin de funciones y estructuras para handle de tipos */
+
 
 /* funciones tabla de simbolos */
 
@@ -500,6 +512,55 @@ fclose(ptr);
 
 
 /* fin de funciones tabla de simbolos */
+
+/*funciones  para handle de tipos */
+
+int insertarTipo(char tipo[]) {
+    strcpy(tipos[contTipos],tipo);
+    strcpy(tipos[contTipos+1],"null");
+    contTipos++;
+    return 0;
+}
+
+int resetTipos(){
+    contTipos = 0;
+    strcpy(tipos[contTipos],"null");
+}
+
+int compararTipos(char *a, char *b){
+//    printf("Comparando %s y %s\n",a,b);
+    if (strstr(a,b) != NULL){
+        return 0;
+    }
+    if (strstr(b,a) != NULL){
+        return 0;
+    }
+    return 1;
+}
+
+
+
+int validarTipos(char tipo[]) {
+    char msg[100];
+    int i ;
+    for(i=0; i< contTipos; i++){
+        if(compararTipos(tipo,tipos[i])!=0){
+            sprintf(msg, "ERROR: Tipos incompatibles\n");
+            yyerror(msg);
+        }
+    }
+    resetTipos();
+    return 0;
+
+}
+
+
+
+
+/*fin de funciones  para handle de tipos */
+
+
+
 
 
 
