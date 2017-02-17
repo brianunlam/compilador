@@ -1,6 +1,6 @@
 DEFVAR
 a : float
 b : string
-
 ENDDEF
-a := b + b;
+
+a := b + c;

@@ -230,7 +230,9 @@ iteracion
     ;
 asignacion
     : ID ASIG expresion              {  auxSymbol = getSymbol($1);
+    printf("****expresion: %s\n", $3);
                                         if(strcmp(auxSymbol.tipo,"float")!=0 ){
+
                                             auxSymbol= getSymbol($3);
                                             if(strcmp(auxSymbol.tipo,"string")!=0){
                                                 auxSymbol= nullSymbol;
@@ -269,7 +271,7 @@ termino
     ;
 factor
     : P_A expresion P_C              {printf("factor : P_A expresion P_C  \n");}
-    | ID                             {printf("factor : ID\n"); }
+    | ID                             {printf("factor : ID\n");  }
     | constanteNumerica
     ;
 constanteNumerica
