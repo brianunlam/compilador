@@ -18,9 +18,9 @@
 3. ~~En las declaraciones guardar tipo de variable del id en ts.~~
 4. ~~Modificar gramática para no tener que validar asignación ni concatenación.~~
 5. ~~Guardar tipos constantes en ts.~~
-6. Validar tipos en asignaciones
-7. Validar tipos en operaciones matematicas
-8. Validar tipos en concatenaciones
+6. ~~Validar tipos en asignaciones~~
+7. ~~Validar tipos en operaciones matematicas~~
+8. ~~Validar tipos en concatenaciones~~
 6. Agregar printf a las acciones que no las tengan.
 7. Enviar lo que está a la profesora.
 8. Pasar a siguiente etapa: generación de código con polaca inversa.

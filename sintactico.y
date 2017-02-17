@@ -242,16 +242,7 @@ iteracion
     ;
 asignacion
     : ID ASIG expresion              {  auxSymbol = getSymbol($1);
-    printf("****expresion: %s\n", $3);
-                                        if(strcmp(auxSymbol.tipo,"float")!=0 ){
-
-                                            auxSymbol= getSymbol($3);
-                                            if(strcmp(auxSymbol.tipo,"string")!=0){
-                                                auxSymbol= nullSymbol;
-                                                yyerror("Tipos incompatibles");
-                                            }
-                                        }
-                                        ;printf("acá hay que validar asignacion : ID ASIG expresion \n");
+                                        validarTipos(auxSymbol.tipo);
                                     }
     | ID ASIG concatenacion          {auxSymbol = getSymbol($1); if(strcmp(auxSymbol.tipo,"string")!=0 ){ auxSymbol = nullSymbol; yyerror("Tipos incompatibles");} ;printf("acá hay que validar asignacion : ID ASIG concatenacion \n");}
     ;
@@ -263,31 +254,31 @@ concatenacion
     | constanteString
     ;
 condicion
-    : expresion CMP_MAY expresion    {printf("condicion  : expresion CMP_MAY expresion \n");}
-    | expresion CMP_MEN expresion    {printf("condicion  | expresion CMP_MEN expresion \n");}
-    | expresion CMP_MAYI expresion   {printf("condicion  :  \n");}
-    | expresion CMP_MENI expresion   {printf("condicion  : CMP_MENI expresion   \n");}
-    | expresion CMP_DIST expresion   {printf("condicion  : CMP_DIST expresion   \n");}
-    | expresion CMP_IGUAL expresion  {printf("condicion  : CMP_IGUAL expresion  \n");}
+    : expresion CMP_MAY expresion    {printf("condicion  : expresion CMP_MAY expresion \n"); validarTipos("float");}
+    | expresion CMP_MEN expresion    {printf("condicion  | expresion CMP_MEN expresion \n"); validarTipos("float");}
+    | expresion CMP_MAYI expresion   {printf("condicion  :  \n"); validarTipos("float");}
+    | expresion CMP_MENI expresion   {printf("condicion  : CMP_MENI expresion   \n"); validarTipos("float");}
+    | expresion CMP_DIST expresion   {printf("condicion  : CMP_DIST expresion   \n"); validarTipos("float");}
+    | expresion CMP_IGUAL expresion  {printf("condicion  : CMP_IGUAL expresion  \n"); validarTipos("float");}
     ;
 expresion
-    : expresion OP_SUM termino       {printf("expresion  : expresion OP_SUM termino \n");}
-    | expresion OP_RES termino       {printf("expresion  : expresion OP_RES termino\n");}
+    : expresion OP_SUM termino       {printf("expresion  : expresion OP_SUM termino \n"); validarTipos("float");}
+    | expresion OP_RES termino       {printf("expresion  : expresion OP_RES termino\n"); validarTipos("float");}
     | termino                        {printf("expresion  : termino                 \n");}
     ;
 termino
-    : termino OP_MUL factor          {printf("termino    : termino OP_MUL factor \n");}
-    | termino OP_DIV factor          {printf("termino    : termino OP_DIV factor \n");}
-    | termino MOD factor             {printf("termino    : termino MOD factor \n");}
+    : termino OP_MUL factor          {printf("termino    : termino OP_MUL factor \n"); validarTipos("float");}
+    | termino OP_DIV factor          {printf("termino    : termino OP_DIV factor \n"); validarTipos("float");}
+    | termino MOD factor             {printf("termino    : termino MOD factor \n"); validarTipos("float");}
     | factor                         {printf("termino    : factor \n");}
     ;
 factor
     : P_A expresion P_C              {printf("factor : P_A expresion P_C  \n");}
-    | ID                             {printf("factor : ID\n");  }
+    | ID                             {printf("factor : ID (insertando tipo) \n"); auxSymbol=getSymbol($1); insertarTipo(auxSymbol.tipo); }
     | constanteNumerica
     ;
 constanteNumerica
-    : ENTERO                         {validarInt(yylval.s) ;printf("constante : ENTERO: %s\n" , yylval.s);}
+    : ENTERO                         {validarInt(yylval.s) ;printf("constante : ENTERO: %s\n" , yylval.s); }
     | REAL                           {validarFloat(yylval.s);printf("constante : REAL: %s  \n" , yylval.s);}
     | BINA                           {validarBin(yylval.s);printf("constante : BINA: %s\n" , yylval.s);}
     ;
@@ -309,6 +300,7 @@ int validarInt(char entero[]) {
     } else {
         //guardarenTS
         saveSymbol(entero,"cFloat", NULL);
+        insertarTipo("cFloat");
         //printf solo para pruebas:
         //printf("Entero ok! %d \n", casteado);
         return 0;
@@ -327,6 +319,7 @@ int validarFloat(char flotante[]) {
         yyerror(msg);
     } else {
         saveSymbol(flotante,"cFloat", NULL);
+        insertarTipo("cFloat");
         //guardarenTS
         //printf solo para pruebas:
     //    printf("Float ok! %f \n", casteado);
@@ -348,6 +341,7 @@ int validarBin(char binario[]){
         yyerror(msg);
     } else {
         saveSymbol(binario,"cFloat", binFloat);
+        insertarTipo("cFloat");
         //guardarenTS
         //printf solo para pruebas:
     //    printf("Binario ok! %d \n", casteado);
@@ -373,6 +367,7 @@ int validarString(char cadena[]) {
     sincomillas[i]='\0';
     //guardarenTS();
     saveSymbol(sincomillas,"cString", NULL);
+    insertarTipo("String");
 /*
     // Bloque para debug
     printf("***************************\n");
@@ -528,7 +523,7 @@ int resetTipos(){
 }
 
 int compararTipos(char *a, char *b){
-//    printf("Comparando %s y %s\n",a,b);
+    printf("Comparando %s y %s\n",a,b);
     if (strstr(a,b) != NULL){
         return 0;
     }
