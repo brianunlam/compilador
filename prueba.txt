@@ -1,5 +1,6 @@
 DEFVAR
-a: float
-c: string
+a : float
+b : string
+
 ENDDEF
-c :=  "hola" ;
+a := b + b;

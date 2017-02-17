@@ -178,6 +178,7 @@ void consolidateIdType();
 %token OP_CONCAT OP_SUM OP_RES OP_DIV OP_MUL MOD DIV
 %token CMP_MAY CMP_MEN CMP_MAYI CMP_MENI CMP_DIST CMP_IGUAL
 %token ASIG
+%type <s> expresion
 
 
 %%
@@ -209,7 +210,7 @@ lista_variables
 tipo_dato
     : STRING { collectType("string") ; printf("tipo_dato  : STRING \n");}
     | FLOAT  { collectType("float") ;printf("tipo_dato  : FLOAT \n");}
-    | INT    { collectType("int") ;printf("tipo_dato  : INT \n");}
+    | INT    { collectType("float") ;printf("tipo_dato  : INT \n");}
     ;
 sentencias
     : sentencias sentencia  {printf("sentencias  : sentencias sentencia\n");}
@@ -228,9 +229,17 @@ iteracion
     : WHILE P_A condicion P_C L_A sentencias L_C {printf("iteracion  : WHILE P_A condicion P_C L_A sentencias\n");}
     ;
 asignacion
-    : ID ASIG expresion              {auxSymbol = getSymbol($1); if(strcmp(auxSymbol.tipo,"float")!=0 ){ auxSymbol = nullSymbol; yyerror("Tipos incompatibles");} ;printf("acá hay que validar asignacion : ID ASIG expresion \n");}
+    : ID ASIG expresion              {  auxSymbol = getSymbol($1);
+                                        if(strcmp(auxSymbol.tipo,"float")!=0 ){
+                                            auxSymbol= getSymbol($3);
+                                            if(strcmp(auxSymbol.tipo,"string")!=0){
+                                                auxSymbol= nullSymbol;
+                                                yyerror("Tipos incompatibles");
+                                            }
+                                        }
+                                        ;printf("acá hay que validar asignacion : ID ASIG expresion \n");
+                                    }
     | ID ASIG concatenacion          {auxSymbol = getSymbol($1); if(strcmp(auxSymbol.tipo,"string")!=0 ){ auxSymbol = nullSymbol; yyerror("Tipos incompatibles");} ;printf("acá hay que validar asignacion : ID ASIG concatenacion \n");}
-    | ID ASIG ID                     {auxSymbol = getSymbol($1); auxSymbol2 = getSymbol($3); if(strcmp(auxSymbol.tipo,auxSymbol2.tipo)!=0 ){ auxSymbol = auxSymbol2 =nullSymbol; yyerror("Tipos incompatibles");} ;}
     ;
 concatenacion
     : ID OP_CONCAT ID                  {auxSymbol = getSymbol($1); if(strcmp(auxSymbol.tipo,"string")!=0 ){ auxSymbol = nullSymbol; yyerror("Tipos incompatibles");} ;auxSymbol = getSymbol($3); if(strcmp(auxSymbol.tipo,"string")!=0 ){ auxSymbol = nullSymbol; yyerror("Tipos incompatibles");} ;printf("acá hay que validar concatenacion: ID OP_CONCAT ID");}
@@ -260,10 +269,9 @@ termino
     ;
 factor
     : P_A expresion P_C              {printf("factor : P_A expresion P_C  \n");}
-    | ID                             {auxSymbol = getSymbol($1); if(strcmp(auxSymbol.tipo,"float")!=0 ){ auxSymbol = nullSymbol; yyerror("Tipos incompatibles");} ;printf("factor : ID: %s\n", yylval.s);}
+    | ID                             {printf("factor : ID\n"); }
     | constanteNumerica
     ;
-
 constanteNumerica
     : ENTERO                         {validarInt(yylval.s) ;printf("constante : ENTERO: %s\n" , yylval.s);}
     | REAL                           {validarFloat(yylval.s);printf("constante : REAL: %s  \n" , yylval.s);}
@@ -274,7 +282,7 @@ constanteString
     ;
 %%
 
-// |
+// //auxSymbol = getSymbol($1); if(strcmp(auxSymbol.tipo,"float")!=0 ){ auxSymbol = nullSymbol; yyerror("Tipos incompatibles");} ;printf("factor : ID: %s\n", yylval.s);}
 
 /* funciones para validacion */
 
