@@ -1,7 +1,8 @@
 DEFVAR
 a : float
 b : float
-
+c : string
+a : int
 ENDDEF
 
-c := "hola";
+a := 2 - 2 ;

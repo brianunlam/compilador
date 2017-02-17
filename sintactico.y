@@ -523,11 +523,18 @@ int resetTipos(){
 }
 
 int compararTipos(char *a, char *b){
-    printf("Comparando %s y %s\n",a,b);
-    if (strstr(a,b) != NULL){
+    char auxa[50];
+    char auxb[50];
+    strcpy(auxa,a);
+    strcpy(auxb,b);
+    downcase(auxa);
+    downcase(auxb);
+    printf("Comparando %s y %s\n",auxa,auxb);
+
+    if (strstr(auxa,auxb) != NULL){
         return 0;
     }
-    if (strstr(b,a) != NULL){
+    if (strstr(auxb,auxa) != NULL){
         return 0;
     }
     return 1;
