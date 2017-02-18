@@ -269,6 +269,7 @@ expresion
 termino
     : termino OP_MUL factor          {printf("termino    : termino OP_MUL factor \n"); validarTipos("float");}
     | termino OP_DIV factor          {printf("termino    : termino OP_DIV factor \n"); validarTipos("float");}
+    | termino DIV factor             {printf("termino    : termino DIV factor \n"); validarTipos("float");}
     | termino MOD factor             {printf("termino    : termino MOD factor \n"); validarTipos("float");}
     | factor                         {printf("termino    : factor \n");}
     ;

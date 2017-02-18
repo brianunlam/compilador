@@ -5,6 +5,6 @@ c : string
 a : int
 ENDDEF
 
-a := 2 - 2 ;
-
-a := b - 3 ;
+if ( a > b) {
+ c := "hola";
+}
