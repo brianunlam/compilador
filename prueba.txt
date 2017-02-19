@@ -1,10 +1,24 @@
 DEFVAR
 a : float
 b : float
+d : int
+cc : int
 c : string
-a : int
+z : float
+r : float
 ENDDEF
+if(a > b){
+a := 1;
+    if(b < a){
+        a:=2;
+    }else{
 
-if ( a > b) {
- c := "hola";
+    a:=3;
+
+    }
+
+
+} else {
+r := 9.1 ;
 }
+z := 99.9;
