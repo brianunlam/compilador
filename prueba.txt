@@ -2,27 +2,7 @@ DEFVAR
 a : float
 b : float
 c : float
-d : float
-e : float
-f : float
-g : float
-
 ENDDEF
     a := 1;
-    a := 3;
-    while( a > a){
-        if( g < g){
-            while(f > f){
-                f:= 1;
-                if(e > e){
-                e:=0;
-                }else{
-                e:=1;
-                }
-            }
-        }else{
-            while(d > d){
-            d:=1;
-            }
-        }
-    }
+    b := a + 2;
+    write a;

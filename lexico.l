@@ -20,6 +20,7 @@ STRING         ["]([^"]|\\.)*["]
 COMENTARIO     [*][/][^/]*[/]+([^*/][^/]*[/]+)*[*]
 ID          {LETRA}({LETRA}|{DIGITO}|[_-])*
 %%
+write|WRITE {return WRITE;}
 float       {return FLOAT;}
 int         {return INT;}
 string       {return STRING;}
@@ -28,8 +29,6 @@ else        {return ELSE;}
 while       {return WHILE;}
 DEFVAR      {return DEFVAR;}
 ENDDEF      {return ENDDEF;}
-PERCENT     {return PERCENT;}
-INLIST      {return INLIST;}
 {ENTERO}    {strcpy(yylval.s, yytext);return ENTERO;}
 {BINA}       {strcpy(yylval.s, yytext);return BINA;}
 {REAL}      {strcpy(yylval.s, yytext);return REAL;}

@@ -210,7 +210,7 @@ void consolidateIdType();
 }
 
 
-%token IF ELSE WHILE DEFVAR ENDDEF PERCENT INLIST
+%token IF ELSE WHILE DEFVAR ENDDEF WRITE
 %token REAL BINA ENTERO STRING_CONST
 %token <s> ID
 %token FLOAT INT STRING
@@ -260,6 +260,7 @@ sentencia
     : asignacion FL         {printf("sentencias  : asignacion FL\n");}
     | iteracion             {printf("sentencias  : iteracion \n");}
     | decision              {printf("sentencias  : decision\n");}
+    | WRITE expresion FL    {printf("sentencia: WRITE expresion FL"); apilarPolaca("WRITE");}
     ;
 decision
    : IF P_A condicion P_C L_A sentencias L_C {printf("decision   : IF P_A condicion P_C L_A sentencias L_C\n");
@@ -270,7 +271,7 @@ decision
    | IF P_A condicion P_C L_A sentencias L_C {
        printf("fin del then\n");
        desapilarEtiqueta();
-       sprintf(buffer,"%d", posPolaca +2);
+       sprintf(buffer,"%d", posPolaca +2);//para que apunte al else que empieza despues del bi
        insertarPolaca(buffer, atoi(EtiqDesa));
        sprintf(buffer, "%d",posPolaca );
        apilarEtiqueta(buffer);
@@ -301,10 +302,10 @@ iteracion
     P_A condicion P_C L_A sentencias L_C {
                                                     printf("iteracion  : WHILE P_A condicion P_C L_A sentencias\n");
                                                      desapilarEtiqueta();
-                                                     sprintf(buffer,"%d", posPolaca + 2);
+                                                     sprintf(buffer,"%d", posPolaca + 2);// para que apunte a lo que viene despues del BI
                                                      insertarPolaca(buffer, atoi(EtiqDesa));
-                                                     sprintf(buffer,"%d", desapilarWhile());
 
+                                                     sprintf(buffer,"%d", desapilarWhile());
                                                      apilarPolaca(buffer);
                                                      apilarPolaca("BI");
                                                 }
