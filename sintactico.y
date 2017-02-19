@@ -20,7 +20,11 @@ int  posPolaca = 0;
 FILE *ArchivoPolaca;
 char buffer[20];
 char pilaPolaca[500][50];
+int pilaWhile[150];
+int topePilaWhile = 0;
+void apilarWhile(int pos);
 
+int desapilarWhile();
 
 void apilarPolaca(char *strToken);
 void insertarPolaca(char *s, int p);
@@ -290,7 +294,20 @@ decision
                                             ;}
    ;
 iteracion
-    : WHILE P_A condicion P_C L_A sentencias L_C {printf("iteracion  : WHILE P_A condicion P_C L_A sentencias\n");}
+    : WHILE {
+            printf("while\n");
+            apilarWhile(posPolaca);
+    }
+    P_A condicion P_C L_A sentencias L_C {
+                                                    printf("iteracion  : WHILE P_A condicion P_C L_A sentencias\n");
+                                                     desapilarEtiqueta();
+                                                     sprintf(buffer,"%d", posPolaca + 2);
+                                                     insertarPolaca(buffer, atoi(EtiqDesa));
+                                                     sprintf(buffer,"%d", desapilarWhile());
+
+                                                     apilarPolaca(buffer);
+                                                     apilarPolaca("BI");
+                                                }
     ;
 asignacion
     : ID ASIG expresion              {  auxSymbol = getSymbol($1);
@@ -734,6 +751,17 @@ funcion que guarda en la pila una etiqueta
 void apilarEtiqueta(char *strEtiq){
     strcpy(pilaEtiquetas[topeEtiquetas],strEtiq);
     topeEtiquetas = topeEtiquetas + 1;
+}
+
+
+void apilarWhile(int pos){
+    pilaWhile[topePilaWhile]=pos;
+    topePilaWhile++;
+}
+
+int desapilarWhile(){
+    topePilaWhile--;
+    return(pilaWhile[topePilaWhile]);
 }
 
 /***************************************************

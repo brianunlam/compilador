@@ -1,24 +1,20 @@
 DEFVAR
 a : float
 b : float
-d : int
-cc : int
-c : string
-z : float
-r : float
+c : float
+d : float
+e : float
+f : float
+g : float
+
 ENDDEF
-if(a > b){
-a := 1;
-    if(b < a){
-        a:=2;
-    }else{
-
-    a:=3;
-
+    a := 1;
+    a := 3;
+    while( a * b  < c + c){
+        b:=1;
+        while(c*f < c+c+c){
+            g:=1;
+        }
+        g:=0;
     }
-
-
-} else {
-r := 9.1 ;
-}
-z := 99.9;
+        b:=2;
