@@ -39,8 +39,11 @@ void generarAsm();
 int contEtiqueta = 0;   //para generar etiq unicas
 char Etiqueta[10];      //para generar etiq unicas
 char EtiqDesa[10];
+char EtiqDesaW[10];
 char pilaEtiquetas[150][10]; //guarda las etiquetas
 int  topeEtiquetas = 0;
+char pilaEtiquetasW[150][10]; //guarda las etiquetas
+int  topeEtiquetasW = 0;
 int  posPolaca = 0;
 FILE *ArchivoPolaca;
 char buffer[20];
@@ -56,6 +59,8 @@ void insertarPolaca(char *s, int p);
 void generarEtiqueta();
 void apilarEtiqueta(char *strEtiq);
 void desapilarEtiqueta();
+void apilarEtiquetaW(char *strEtiq);
+void desapilarEtiquetaW();
 void grabarPolaca();
 
 /* fin de funciones para polaca etc */
@@ -780,6 +785,11 @@ void apilarEtiqueta(char *strEtiq){
     topeEtiquetas = topeEtiquetas + 1;
 }
 
+void apilarEtiquetaW(char *strEtiq){
+    strcpy(pilaEtiquetasW[topeEtiquetasW],strEtiq);
+    topeEtiquetasW++;
+}
+
 
 void apilarWhile(int pos){
     pilaWhile[topePilaWhile]=pos;
@@ -800,6 +810,14 @@ void desapilarEtiqueta(){
     strcpy(EtiqDesa,pilaEtiquetas[topeEtiquetas]);
 	strcpy(pilaEtiquetas[topeEtiquetas],"");
 }
+
+void desapilarEtiquetaW(){
+
+    topeEtiquetasW--;
+    strcpy(EtiqDesaW,pilaEtiquetasW[topeEtiquetasW]);
+	strcpy(pilaEtiquetasW[topeEtiquetasW],"");
+}
+
 
 /* fin de funciones para polaca */
 
