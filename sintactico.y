@@ -290,18 +290,18 @@ sentencia
 decision
    : IF P_A condicion P_C L_A sentencias L_C {printf("decision   : IF P_A condicion P_C L_A sentencias L_C\n");
                                                 desapilarEtiqueta();
-                                                sprintf(buffer,"%d", posPolaca);
-                                                insertarPolaca(buffer, atoi(EtiqDesa));
+                                                strcat(EtiqDesa,":");
+                                                apilarPolaca(EtiqDesa);
                                              }
    | IF P_A condicion P_C L_A sentencias L_C {
        printf("fin del then\n");
-       desapilarEtiqueta();
-       sprintf(buffer,"%d", posPolaca +2);//para que apunte al else que empieza despues del bi
-       insertarPolaca(buffer, atoi(EtiqDesa));
-       sprintf(buffer, "%d",posPolaca );
-       apilarEtiqueta(buffer);
-       apilarPolaca("pos");
+       generarEtiqueta();//fin
+       apilarPolaca(Etiqueta);//fin
        apilarPolaca("BI");
+       desapilarEtiqueta();
+       strcat(EtiqDesa,":");
+       apilarPolaca(EtiqDesa);
+       apilarEtiqueta(Etiqueta);
 // aca esta la magia
 
 // aca termina la magia
@@ -315,8 +315,8 @@ decision
     L_A sentencias L_C
                                             {printf("fin del else\n");
                                             desapilarEtiqueta();
-                                            sprintf(buffer,"%d", posPolaca);
-                                            insertarPolaca(buffer, atoi(EtiqDesa));
+                                            strcat(EtiqDesa,":");
+                                            apilarPolaca(EtiqDesa);
                                             ;}
    ;
 iteracion
@@ -378,49 +378,49 @@ condicion
     : expresion CMP_MAY expresion    {printf("condicion  : expresion CMP_MAY expresion \n");
                                         validarTipos("float");
                                         apilarPolaca("CMP");
-                                        sprintf(buffer, "%d",posPolaca);
-                                        apilarEtiqueta(buffer);
-                                        apilarPolaca("pos");
+                                        generarEtiqueta();
+                                        apilarEtiqueta(Etiqueta);
+                                        apilarPolaca(Etiqueta);
                                         apilarPolaca("BLE");
                                     }
     | expresion CMP_MEN expresion    {printf("condicion  | expresion CMP_MEN expresion \n");
                                         validarTipos("float");
                                         apilarPolaca("CMP");
-                                        sprintf(buffer, "%d",posPolaca);
-                                        apilarEtiqueta(buffer);
-                                        apilarPolaca("pos");
+                                        generarEtiqueta();
+                                        apilarEtiqueta(Etiqueta);
+                                        apilarPolaca(Etiqueta);
                                         apilarPolaca("BGE");
                                         }
     | expresion CMP_MAYI expresion   {printf("condicion  :  \n");
                                         validarTipos("float");
                                         apilarPolaca("CMP");
-                                        sprintf(buffer, "%d",posPolaca);
-                                        apilarEtiqueta(buffer);
-                                        apilarPolaca("pos");
+                                        generarEtiqueta();
+                                        apilarEtiqueta(Etiqueta);
+                                        apilarPolaca(Etiqueta);
                                         apilarPolaca("BLT");
                                     }
     | expresion CMP_MENI expresion   {printf("condicion  : CMP_MENI expresion   \n");
                                         validarTipos("float");
                                         apilarPolaca("CMP");
-                                        sprintf(buffer, "%d",posPolaca);
-                                        apilarEtiqueta(buffer);
-                                        apilarPolaca("pos");
+                                        generarEtiqueta();
+                                        apilarEtiqueta(Etiqueta);
+                                        apilarPolaca(Etiqueta);
                                         apilarPolaca("BGT");
                                     }
     | expresion CMP_DIST expresion   {printf("condicion  : CMP_DIST expresion   \n");
                                         validarTipos("float");
                                         apilarPolaca("CMP");
-                                        sprintf(buffer, "%d",posPolaca);
-                                        apilarEtiqueta(buffer);
-                                        apilarPolaca("pos");
+                                        generarEtiqueta();
+                                        apilarEtiqueta(Etiqueta);
+                                        apilarPolaca(Etiqueta);
                                         apilarPolaca("BEQ");
                                     }
     | expresion CMP_IGUAL expresion  {printf("condicion  : CMP_IGUAL expresion  \n");
                                         validarTipos("float");
                                         apilarPolaca("CMP");
-                                        sprintf(buffer, "%d",posPolaca);
-                                        apilarEtiqueta(buffer);
-                                        apilarPolaca("pos");
+                                        generarEtiqueta();
+                                        apilarEtiqueta(Etiqueta);
+                                        apilarPolaca(Etiqueta);
                                         apilarPolaca("BNE");
                                     }
     ;

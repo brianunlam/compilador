@@ -18,9 +18,9 @@ vtext db 100 dup('$')
 	@c	dd	?
 	@y	dd	?
 	@d	db	MAXTEXTSIZE dup (?),'$'
-	_10	dd	10.000000
-	_2	dd	2.000000
+	_1	dd	1.000000
 	_3	dd	3.000000
+	_2	dd	2.000000
 
 .CODE
 START:
@@ -32,21 +32,11 @@ START:
 
 ;Comienzo codigo de usuario
 
-	fld _10
+	fld _1
 	fstp @a
-	fld _2
-	fld @a
-	fadd St(0),St(1)
 	fld _3
-	fadd St(0),St(1)
 	fstp @b
-	fld _a
-	fstp @c
-	fld @b
-	fld @c
-	fmul St(0),St(1)
-	fld @y
-	fadd St(0),St(1)
+	fld _2
 	fstp @c
 
 ;finaliza el asm

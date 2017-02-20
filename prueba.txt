@@ -5,7 +5,9 @@ c : float
 y : float
 d : string
 ENDDEF
-    a := 10;
-    b := a + 2 + 3;
-    c := a;
-    c := c * b + y ;
+    if( a > b){
+    a:=1;
+    } else {
+    b:=3;
+    }
+    c:=2;
