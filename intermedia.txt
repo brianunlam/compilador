@@ -1,13 +1,20 @@
-1
+10
 a
 =
 a
 2
 +
+3
++
 b
 =
 a
-WRITE
-"hola mundo"
-d
+c
+=
+c
+b
+*
+y
++
+c
 =

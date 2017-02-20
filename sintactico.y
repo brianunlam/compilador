@@ -756,6 +756,7 @@ void grabarPolaca(){
     for(i=0; i<posPolaca ; i++){
         fprintf(ArchivoPolaca, "%s\n",pilaPolaca[i]);
     }
+    fclose(ArchivoPolaca);
 }
 
 
@@ -813,7 +814,7 @@ int main(int argc,char *argv[]){
     }
     strcpy(nullSymbol.nombre,"!");//inicializando simbolo nulo
     yyparse();
-    fclose(ArchivoPolaca);
+    //fclose(ArchivoPolaca);
     return 0;
 }
 
@@ -830,29 +831,21 @@ int yyerror(char *msg){
 funcion que saca de la pila asm un operando
 ***************************************************/
 void desapilarOperando(){
-	int b=0;
-	if(strcmp(strConc,"concatenacion")!=0){
-    	topePilaAsm--;
-    	if(topePilaAsm<0){
-    	topePilaAsm=0;
-    	strcpy(strOpe,"nada");
-    	b=1;
-//    	bandera=1;
-    	}
+	topePilaAsm--;
+    if(topePilaAsm < 0){
+        topePilaAsm=0;
+        strcpy(strOpe,"!");
+    }else{
+    strcpy(strOpe,strPila[topePilaAsm]);
+	strcpy(strPila[topePilaAsm],"");
     }
-    if(b!=1){
-      strcpy(strOpe,strPila[topePilaAsm]);
-	  strcpy(strPila[topePilaAsm],"");
-    }
-
-
 }
-
 /***************************************************
 funcion que guarda en la pila un operando
 ***************************************************/
 void apilarOperando(char *strOp){
     printf("Apilando %s \n", strOp);
+    strtok(strOp,"\n");
     strcpy(strPila[topePilaAsm],strOp);
     topePilaAsm++;
 }
@@ -860,7 +853,7 @@ void apilarOperando(char *strOp){
 
 void imprimirHeader(FILE *p){
     fprintf(p,".MODEL LARGE\n.386\n.STACK 200h\n\n.DATA\n\tMAXTEXTSIZE equ 50\n ");
-    fprintf(p,"\t__result dd ? \n" );
+//    fprintf(p,"\t__result dd ? \n" );
     fprintf(p,"\t__flags dw ? \n" );
     fprintf(p,"\t__descar dd ? \n" );
     fprintf(p,"\t__auxConc db MAXTEXTSIZE dup (?), '$'\n" );
@@ -869,6 +862,18 @@ void imprimirHeader(FILE *p){
     fprintf(p,"\t_newLine db 0Dh, 0Ah,'$'\n" );
     fprintf (ArchivoAsm,"vtext db 100 dup('$')\n ");
 }
+
+void imprimirFin(FILE *p){
+    fprintf(p,"\n;finaliza el asm\n ");
+    fprintf(p,"\tmov ah,4ch\n" );
+    fprintf(p,"\tmov al,0\n" );
+    fprintf(p,"\tint 21h\n" );
+    fprintf(p,"\n\nEND START" );
+}
+
+
+
+
 
  void imprimirVariables(FILE *p){  //aca tengo que leer la tabla de simbolos, para los float es fácil
                                   //para las cadenas no
@@ -895,17 +900,145 @@ void imprimirHeader(FILE *p){
     }
 }
 
-void generarASIG(){
-    // a := b
-    char aux[50];
-    char aux1[50];
-    char strCadena[50];
-    int i;
-    int a = 0;
-    //desapilo, y busco en ts, guardo valor en aux y aux1
+void generarWRITE(){
+    desapilarOperando();
+    auxSymbol = getSymbol(strOpe);
 
+    fprintf(ArchivoAsm,"\n\tLEA DX, \n");
+    fprintf(ArchivoAsm,"\n\tMOV AH, 9\n");
+    fprintf(ArchivoAsm,"\n\tINR 21H\n");
+}
+
+void generarADD(){
+
+    desapilarOperando();
+    auxSymbol = getSymbol(strOpe);
+
+    desapilarOperando();
+    auxSymbol2 = getSymbol(strOpe);
+    if(strcmp(auxSymbol.tipo,"cfloat")==0){
+        fprintf(ArchivoAsm,"\tfld %s\n",auxSymbol.nombre); //fld qword ptr ds:[_%s]\n
+    }
+    if(strcmp(auxSymbol.tipo,"float")==0){
+        fprintf(ArchivoAsm,"\tfld @%s\n",&auxSymbol.nombre[1]); //fld qword ptr ds:[_%s]\n
+    }
+    if(strcmp(auxSymbol2.tipo,"cfloat")==0){
+        fprintf(ArchivoAsm,"\tfld %s\n",auxSymbol2.nombre); //fld qword ptr ds:[_%s]\n
+    }
+    if(strcmp(auxSymbol2.tipo,"float")==0){
+        fprintf(ArchivoAsm,"\tfld @%s\n",&auxSymbol2.nombre[1]); //fld qword ptr ds:[_%s]\n
+    }
+
+    fprintf(ArchivoAsm,"\tfadd St(0),St(1)\n");
+//    fprintf(ArchivoAsm,"\tfstp __result\n");
+//    apilarOperando("__result");
+}
+
+void generarREST(){
+
+    desapilarOperando();
+    auxSymbol = getSymbol(strOpe);
+
+    desapilarOperando();
+    auxSymbol2 = getSymbol(strOpe);
+    if(strcmp(auxSymbol.tipo,"cfloat")==0){
+        fprintf(ArchivoAsm,"\tfld %s\n",auxSymbol.nombre); //fld qword ptr ds:[_%s]\n
+    }
+    if(strcmp(auxSymbol.tipo,"float")==0){
+        fprintf(ArchivoAsm,"\tfld @%s\n",&auxSymbol.nombre[1]); //fld qword ptr ds:[_%s]\n
+    }
+    if(strcmp(auxSymbol2.tipo,"cfloat")==0){
+        fprintf(ArchivoAsm,"\tfld %s\n",auxSymbol2.nombre); //fld qword ptr ds:[_%s]\n
+    }
+    if(strcmp(auxSymbol2.tipo,"float")==0){
+        fprintf(ArchivoAsm,"\tfld @%s\n",&auxSymbol2.nombre[1]); //fld qword ptr ds:[_%s]\n
+    }
+
+    fprintf(ArchivoAsm,"\tfsub St(0),St(1)\n");
+//    fprintf(ArchivoAsm,"\tfstp __result\n");
+//    apilarOperando("__result");
+}
+
+
+void generarDIV(){
+
+    desapilarOperando();
+    auxSymbol = getSymbol(strOpe);
+
+    desapilarOperando();
+    auxSymbol2 = getSymbol(strOpe);
+    if(strcmp(auxSymbol.tipo,"cfloat")==0){
+        fprintf(ArchivoAsm,"\tfld %s\n",auxSymbol.nombre); //fld qword ptr ds:[_%s]\n
+    }
+    if(strcmp(auxSymbol.tipo,"float")==0){
+        fprintf(ArchivoAsm,"\tfld @%s\n",&auxSymbol.nombre[1]); //fld qword ptr ds:[_%s]\n
+    }
+    if(strcmp(auxSymbol2.tipo,"cfloat")==0){
+        fprintf(ArchivoAsm,"\tfld %s\n",auxSymbol2.nombre); //fld qword ptr ds:[_%s]\n
+    }
+    if(strcmp(auxSymbol2.tipo,"float")==0){
+        fprintf(ArchivoAsm,"\tfld @%s\n",&auxSymbol2.nombre[1]); //fld qword ptr ds:[_%s]\n
+    }
+
+    fprintf(ArchivoAsm,"\tfdiv St(0),St(1)\n");
+//    fprintf(ArchivoAsm,"\tfstp __result\n");
+//    apilarOperando("__result");
+}
+
+
+void generarMUL(){
+
+    desapilarOperando();
+    auxSymbol = getSymbol(strOpe);
+
+    desapilarOperando();
+    auxSymbol2 = getSymbol(strOpe);
+    if(strcmp(auxSymbol.tipo,"cfloat")==0){
+        fprintf(ArchivoAsm,"\tfld %s\n",auxSymbol.nombre); //fld qword ptr ds:[_%s]\n
+    }
+    if(strcmp(auxSymbol.tipo,"float")==0){
+        fprintf(ArchivoAsm,"\tfld @%s\n",&auxSymbol.nombre[1]); //fld qword ptr ds:[_%s]\n
+    }
+    if(strcmp(auxSymbol2.tipo,"cfloat")==0){
+        fprintf(ArchivoAsm,"\tfld %s\n",auxSymbol2.nombre); //fld qword ptr ds:[_%s]\n
+    }
+    if(strcmp(auxSymbol2.tipo,"float")==0){
+        fprintf(ArchivoAsm,"\tfld @%s\n",&auxSymbol2.nombre[1]); //fld qword ptr ds:[_%s]\n
+    }
+
+    fprintf(ArchivoAsm,"\tfmul St(0),St(1)\n");
+//    fprintf(ArchivoAsm,"\tfstp __result\n");
+//    apilarOperando("__result");
+}
+
+
+
+
+void generarASIG(){
+    int static veces = 0;
+    veces++;
+    printf("********** %d\n", veces);
+    // a := b
+    //desapilo, y busco en ts, guardo valor en aux y aux1
+    desapilarOperando();
+    auxSymbol = getSymbol(strOpe);
+    desapilarOperando();
+    auxSymbol2 = getSymbol(strOpe);
+    printf("==== %s\n", auxSymbol.nombre);
+    printf("==== %s\n", auxSymbol2.nombre);
+    if(strcmp(auxSymbol2.tipo,"cfloat")==0){
+        fprintf(ArchivoAsm,"\tfld %s\n",auxSymbol2.nombre); //fld qword ptr ds:[_%s]\n
+		fprintf(ArchivoAsm,"\tfstp @%s\n",&auxSymbol.nombre[1]); //qword ptr ds:[
+    }
+    if(strcmp(auxSymbol2.tipo,"float")==0){
+        fprintf(ArchivoAsm,"\tfld %s\n",auxSymbol2.nombre); //fld qword ptr ds:[_%s]\n
+		fprintf(ArchivoAsm,"\tfstp @%s\n",&auxSymbol.nombre[1]); //qword ptr ds:[
+    }
+    if(strcmp(auxSymbol2.nombre,"!")==0){
+        fprintf(ArchivoAsm,"\tfstp @%s\n",&auxSymbol.nombre[1]); //qword ptr ds:[
+    }
     // a:= 1
-    // a:= b /b float
+    // a:= b /b
     // a:= b /b cadena
     // a:= "cadena"
 
@@ -936,6 +1069,10 @@ void reemplazarBlancos(char *cad){
 
 void generarAsm(){
 
+    //symbolos auxiliares para el asm
+
+    //saveSymbol("_result","cFloat",NULL);
+
 if ((ArchivoPolaca = fopen("intermedia.txt", "rt")) == NULL){
     printf("ERROR!!!\nNo se Puede Abrir El Archivo intermedia.txt \n");
     getch();
@@ -954,31 +1091,38 @@ if ((ArchivoAsm = fopen("Final.asm", "wt")) == NULL){
     imprimirHeader(ArchivoAsm);
     imprimirVariables(ArchivoAsm);
 
+fprintf(ArchivoAsm,"\n.CODE\n");
+fprintf(ArchivoAsm,"START:\n");
+fprintf(ArchivoAsm,"\n\tMOV AX, @DATA\n");
+fprintf(ArchivoAsm,"\n\tMOV DS, AX\n");
 
+fprintf(ArchivoAsm,"\n\n;Comienzo codigo de usuario\n\n");
 
 while(fgets(linea,sizeof(linea),ArchivoPolaca)!=NULL){
+
+
     if( strcmp(linea,"+\n") == 0 )
-        ;//generarADD();
+        generarADD();
       else
         if( strcmp(linea,"*\n") == 0 )
-        ;  //generarMUL();
+            generarMUL();
         else
           if( strcmp(linea,"-\n") == 0 )
 
-        ;//    generarREST();
+            generarREST();
           else
 
             if( strcmp(linea,"/\n") == 0 )
-        ;//      generarDIV();
+              generarDIV();
             else
               if( strcmp(linea,"++\n") == 0 )
         ;//        generarCONC();
               else
-                if( strcmp(linea,":=\n") == 0 )
+                if( strcmp(linea,"=\n") == 0 )
                   generarASIG();
                 else
                   if( strcmp(linea,"WRITE\n") == 0 )
-        ;//            generarWRITE();
+                    generarWRITE();
                   else
                     if(strcmp(linea,"READ\n") == 0)
         ;//              generarREAD();
@@ -1004,5 +1148,10 @@ while(fgets(linea,sizeof(linea),ArchivoPolaca)!=NULL){
 
 }
 
+
+
+imprimirFin(ArchivoAsm);
+
+fclose(ArchivoAsm);
 
 }

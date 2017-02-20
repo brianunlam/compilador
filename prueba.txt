@@ -2,9 +2,10 @@ DEFVAR
 a : float
 b : float
 c : float
+y : float
 d : string
 ENDDEF
-    a := 1;
-    b := a + 2;
-    write a;
-    d := "hola mundo";
+    a := 10;
+    b := a + 2 + 3;
+    c := a;
+    c := c * b + y ;
