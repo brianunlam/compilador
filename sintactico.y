@@ -327,17 +327,19 @@ decision
 iteracion
     : WHILE {
             printf("while\n");
-            apilarWhile(posPolaca);
-    }
+            generarEtiqueta();//fin
+            apilarPolaca(Etiqueta);//fin
+            apilarEtiquetaW(Etiqueta);
+            }
     P_A condicion P_C L_A sentencias L_C {
                                                     printf("iteracion  : WHILE P_A condicion P_C L_A sentencias\n");
-                                                     desapilarEtiqueta();
-                                                     sprintf(buffer,"%d", posPolaca + 2);// para que apunte a lo que viene despues del BI
-                                                     insertarPolaca(buffer, atoi(EtiqDesa));
-
-                                                     sprintf(buffer,"%d", desapilarWhile());
-                                                     apilarPolaca(buffer);
+                                                     desapilarEtiquetaW();
+                                                     strcat(EtiqDesaW, ":");
+                                                     apilarPolaca(EtiqDesaW);//inicio
                                                      apilarPolaca("BI");
+                                                     desapilarEtiqueta();
+                                                     strcat(EtiqDesa,":");
+                                                     apilarPolaca(EtiqDesa);
                                                 }
     ;
 asignacion

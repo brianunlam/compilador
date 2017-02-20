@@ -5,9 +5,13 @@ c : float
 y : float
 d : string
 ENDDEF
-    if( a > b){
     a:=1;
-    } else {
-    b:=3;
+
+    while(a > b){
+    a:=0;
+        if(a > a){
+        b:= b;
+        }
+
     }
-    c:=2;
+    b:=1;

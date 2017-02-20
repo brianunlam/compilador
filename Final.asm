@@ -19,8 +19,7 @@ vtext db 100 dup('$')
 	@y	dd	?
 	@d	db	MAXTEXTSIZE dup (?),'$'
 	_1	dd	1.000000
-	_3	dd	3.000000
-	_2	dd	2.000000
+	_0	dd	0.000000
 
 .CODE
 START:
@@ -34,10 +33,12 @@ START:
 
 	fld _1
 	fstp @a
-	fld _3
+	fld _0
+	fstp @a
+	fld _b
 	fstp @b
-	fld _2
-	fstp @c
+	fld _1
+	fstp @b
 
 ;finaliza el asm
  	mov ah,4ch
