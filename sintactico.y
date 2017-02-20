@@ -8,6 +8,31 @@
 extern int yylineno;
 extern char *yytext;
 
+/* aca va a venir todo para el asm */
+
+/* declaraciones para generacion de assembler */
+char cteStrSinBlancos[50];
+char linea[50];
+int topePilaAsm = 0;
+char strPila[1000][50];
+char strOpe[50];
+char strConc[50];
+FILE *ArchivoAsm;
+void reemplazarBlancos(char *cad);
+void desapilarOperando();
+void apilarOperando(char *strOp);
+void imprimirHeader(FILE *p);
+void imprimirVariables(FILE *p);
+void generarASIG();
+void generarAsm();
+
+
+
+
+
+
+
+
 
 /* funciones para polaca etc */
 
@@ -222,7 +247,7 @@ void consolidateIdType();
 
 
 %%
-raiz: programa { printf("Compila OK \n"); symbolTableToHtml(symbolTable,"ts.html");grabarPolaca();}
+raiz: programa { printf("Compila OK \n"); symbolTableToHtml(symbolTable,"ts.html");grabarPolaca();generarAsm();}
     ;
 programa
     :bloque_dec sentencias {printf("programa : bloque_dec sentencias \n");}
@@ -319,7 +344,7 @@ asignacion
                                     }
     | ID ASIG concatenacion          {  auxSymbol = getSymbol($1);
                                         if(strcmp(auxSymbol.tipo,"string")!=0 ){ auxSymbol = nullSymbol; yyerror("Tipos incompatibles");}
-                                        validarTipos("string");
+                                        //validarTipos("string");
                                         printf("acá hay que validar asignacion : ID ASIG concatenacion \n");
                                         apilarPolaca($1);
                                         apilarPolaca("=");
@@ -347,7 +372,7 @@ concatenacion
                                         apilarPolaca("++");
                                         }
     | constanteString OP_CONCAT constanteString {validarTipos("string");apilarPolaca("++");}
-    | constanteString                   {validarTipos("string");}
+    | constanteString                   {/*validarTipos("string");*/;}
     ;
 condicion
     : expresion CMP_MAY expresion    {printf("condicion  : expresion CMP_MAY expresion \n");
@@ -511,7 +536,7 @@ int validarString(char cadena[]) {
     sincomillas[i]='\0';
     //guardarenTS();
     saveSymbol(sincomillas,"cString", NULL);
-    insertarTipo("String");
+    insertarTipo("string");
 /*
     // Bloque para debug
     printf("***************************\n");
@@ -729,7 +754,7 @@ void insertarPolaca(char *strToken, int pos){
 void grabarPolaca(){
     int i;
     for(i=0; i<posPolaca ; i++){
-        fprintf(ArchivoPolaca, "%d : %s\n",i,pilaPolaca[i]);
+        fprintf(ArchivoPolaca, "%s\n",pilaPolaca[i]);
     }
 }
 
@@ -795,4 +820,189 @@ int main(int argc,char *argv[]){
 int yyerror(char *msg){
     fprintf(stderr, "At line %d %s in text: %s\n", yylineno, msg, yytext);
     exit(1);
+}
+
+
+
+/* todas las funciones para generar asm */
+
+/***************************************************
+funcion que saca de la pila asm un operando
+***************************************************/
+void desapilarOperando(){
+	int b=0;
+	if(strcmp(strConc,"concatenacion")!=0){
+    	topePilaAsm--;
+    	if(topePilaAsm<0){
+    	topePilaAsm=0;
+    	strcpy(strOpe,"nada");
+    	b=1;
+//    	bandera=1;
+    	}
+    }
+    if(b!=1){
+      strcpy(strOpe,strPila[topePilaAsm]);
+	  strcpy(strPila[topePilaAsm],"");
+    }
+
+
+}
+
+/***************************************************
+funcion que guarda en la pila un operando
+***************************************************/
+void apilarOperando(char *strOp){
+    printf("Apilando %s \n", strOp);
+    strcpy(strPila[topePilaAsm],strOp);
+    topePilaAsm++;
+}
+
+
+void imprimirHeader(FILE *p){
+    fprintf(p,".MODEL LARGE\n.386\n.STACK 200h\n\n.DATA\n\tMAXTEXTSIZE equ 50\n ");
+    fprintf(p,"\t__result dd ? \n" );
+    fprintf(p,"\t__flags dw ? \n" );
+    fprintf(p,"\t__descar dd ? \n" );
+    fprintf(p,"\t__auxConc db MAXTEXTSIZE dup (?), '$'\n" );
+    fprintf(p,"\t__resultConc db MAXTEXTSIZE dup (?), '$'\n" );
+    fprintf(p,"\tmsgPRESIONE db 0DH, 0AH,'Presione una tecla para continuar...','$'\n");
+    fprintf(p,"\t_newLine db 0Dh, 0Ah,'$'\n" );
+    fprintf (ArchivoAsm,"vtext db 100 dup('$')\n ");
+}
+
+ void imprimirVariables(FILE *p){  //aca tengo que leer la tabla de simbolos, para los float es fácil
+                                  //para las cadenas no
+    fprintf(p, "\n;Declaracion de variables de usuario\n");
+    int i;
+    float auxf;
+    char auxs[50];
+    for(i=0; i < pos_st ; i++){
+        if(strcmp(symbolTable[i].tipo, "float")==0){
+            fprintf (p, "\t@%s\tdd\t?\n", &symbolTable[i].nombre[1]);
+        }
+        if(strcmp(symbolTable[i].tipo, "cfloat")==0){
+            auxf= atof(symbolTable[i].valor);
+            sprintf(auxs, "%f", auxf);
+            fprintf (p, "\t%s\tdd\t%s\n", symbolTable[i].nombre, auxs);
+        }
+        if(strcmp(symbolTable[i].tipo, "string")==0){
+            fprintf (p,"\t@%s\tdb\tMAXTEXTSIZE dup (?),'$'\n", &symbolTable[i].nombre[1]);
+        }
+        if(strcmp(symbolTable[i].tipo, "cstring")==0){
+                reemplazarBlancos(symbolTable[i].nombre);
+                fprintf(p,"\t%s\tdb\t'%s','$',%d dup (?)\n", cteStrSinBlancos, symbolTable[i].valor, 49-strlen(symbolTable[i].valor) );
+        }
+    }
+}
+
+void generarASIG(){
+    // a := b
+    char aux[50];
+    char aux1[50];
+    char strCadena[50];
+    int i;
+    int a = 0;
+    //desapilo, y busco en ts, guardo valor en aux y aux1
+
+    // a:= 1
+    // a:= b /b float
+    // a:= b /b cadena
+    // a:= "cadena"
+
+}
+
+
+void reemplazarBlancos(char *cad){
+	int i,num;
+	char aux[50];
+
+	for(i=0; i < strlen(cad); i++){
+
+		if( (cad[i]=='_')|| cad[i]=='\0' || cad[i]=='\n' || (cad[i]>='0' &&cad[i]<='9') || (cad[i]>='a' && cad[i]<= 'z')|| (cad[i]>= 'A' &&cad[i]<='Z') ) {
+			cteStrSinBlancos[i]=cad[i];
+        }
+		else{
+		    cteStrSinBlancos[i]='_';
+        }
+	}
+
+	cteStrSinBlancos[i--]='\0';
+
+	strcpy(cad,cteStrSinBlancos);
+
+}
+
+
+
+void generarAsm(){
+
+if ((ArchivoPolaca = fopen("intermedia.txt", "rt")) == NULL){
+    printf("ERROR!!!\nNo se Puede Abrir El Archivo intermedia.txt \n");
+    getch();
+	exit(0);
+}
+
+if ((ArchivoAsm = fopen("Final.asm", "wt")) == NULL){
+	printf("ERROR!!!\nNo se Puede Abrir El Archivo Final.asm \n");
+	getch();
+	exit(0);}
+
+
+
+    printf("\n\n..... Generando codigo Assembler ....\n\n");
+
+    imprimirHeader(ArchivoAsm);
+    imprimirVariables(ArchivoAsm);
+
+
+
+while(fgets(linea,sizeof(linea),ArchivoPolaca)!=NULL){
+    if( strcmp(linea,"+\n") == 0 )
+        ;//generarADD();
+      else
+        if( strcmp(linea,"*\n") == 0 )
+        ;  //generarMUL();
+        else
+          if( strcmp(linea,"-\n") == 0 )
+
+        ;//    generarREST();
+          else
+
+            if( strcmp(linea,"/\n") == 0 )
+        ;//      generarDIV();
+            else
+              if( strcmp(linea,"++\n") == 0 )
+        ;//        generarCONC();
+              else
+                if( strcmp(linea,":=\n") == 0 )
+                  generarASIG();
+                else
+                  if( strcmp(linea,"WRITE\n") == 0 )
+        ;//            generarWRITE();
+                  else
+                    if(strcmp(linea,"READ\n") == 0)
+        ;//              generarREAD();
+                    else
+                    	if( strcmp(linea,"==\n") == 0
+    		                  || strcmp(linea,"<\n") == 0
+    		                  || strcmp(linea,"<=\n") == 0
+    		                  || strcmp(linea,">\n") == 0
+    		                  || strcmp(linea,">=\n") == 0
+    		                  || strcmp(linea,"!=\n") == 0 ) //comparacion
+    		;                //    generarCMP(linea); //funcion que genera el codigo asm para los comparadores
+
+    		                  else
+    		                    if( strcmp(linea,"BF\n") == 0 || strcmp(linea,"BV\n") == 0 || strcmp(linea,"BI\n") == 0)
+    		 ;                 //    generarSalto(linea);
+
+    		                    else
+    		                      if(strchr(linea, ':') && linea[0]!='_')
+    		  ;                  //    ponerEtiqueta(linea);
+    		                      else
+    		                        apilarOperando(linea);
+
+
+}
+
+
 }
