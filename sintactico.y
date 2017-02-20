@@ -328,13 +328,14 @@ iteracion
     : WHILE {
             printf("while\n");
             generarEtiqueta();//fin
-            apilarPolaca(Etiqueta);//fin
             apilarEtiquetaW(Etiqueta);
+            strcat(Etiqueta, ":");
+            apilarPolaca(Etiqueta);//fin
+
             }
     P_A condicion P_C L_A sentencias L_C {
                                                     printf("iteracion  : WHILE P_A condicion P_C L_A sentencias\n");
                                                      desapilarEtiquetaW();
-                                                     strcat(EtiqDesaW, ":");
                                                      apilarPolaca(EtiqDesaW);//inicio
                                                      apilarPolaca("BI");
                                                      desapilarEtiqueta();
@@ -1031,7 +1032,11 @@ void generarMUL(){
 //    apilarOperando("__result");
 }
 
+void generarCMP(){
+//para if
+//desapilo lo que hay que comparar
 
+}
 
 
 void generarASIG(){
@@ -1147,7 +1152,11 @@ while(fgets(linea,sizeof(linea),ArchivoPolaca)!=NULL){
                     if(strcmp(linea,"READ\n") == 0)
         ;//              generarREAD();
                     else
-                    	if( strcmp(linea,"==\n") == 0
+                        if( strcmp(linea,"CMP\n")==0)
+                            generarCMP();
+                            else
+                              apilarOperando(linea);
+/*                    	if( strcmp(linea,"==\n") == 0
     		                  || strcmp(linea,"<\n") == 0
     		                  || strcmp(linea,"<=\n") == 0
     		                  || strcmp(linea,">\n") == 0
@@ -1162,10 +1171,10 @@ while(fgets(linea,sizeof(linea),ArchivoPolaca)!=NULL){
     		                    else
     		                      if(strchr(linea, ':') && linea[0]!='_')
     		  ;                  //    ponerEtiqueta(linea);
-    		                      else
-    		                        apilarOperando(linea);
 
 
+
+*/
 }
 
 

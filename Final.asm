@@ -19,7 +19,6 @@ vtext db 100 dup('$')
 	@y	dd	?
 	@d	db	MAXTEXTSIZE dup (?),'$'
 	_1	dd	1.000000
-	_0	dd	0.000000
 
 .CODE
 START:
@@ -33,10 +32,6 @@ START:
 
 	fld _1
 	fstp @a
-	fld _0
-	fstp @a
-	fld _b
-	fstp @b
 	fld _1
 	fstp @b
 
