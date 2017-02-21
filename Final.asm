@@ -26,7 +26,7 @@ vtext db 100 dup('$')
 	@laf	db	MAXTEXTSIZE dup (?),'$'
 	@seg	db	MAXTEXTSIZE dup (?),'$'
 	_10	dd	10.000000
-	_3	dd	3.000000
+	_ob10	dd	2.000000
 
 .CODE
 START:
@@ -40,7 +40,7 @@ START:
 
 ;Comienzo codigo de usuario
 
-	fld _3
+	fld _ob10
 	fld _10
 	fdiv St(0),St(1)
 	fstcw oldcw
