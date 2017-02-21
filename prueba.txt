@@ -5,5 +5,9 @@ c : float
 y : float
 d : string
 ENDDEF
-a:=999;
-write a;
+a:=0;
+while(a < 100){
+    write "chupamela";
+    write a;
+    a:= a +1 ;
+}

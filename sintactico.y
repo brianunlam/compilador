@@ -290,8 +290,8 @@ sentencia
     : asignacion FL         {printf("sentencias  : asignacion FL\n");}
     | iteracion             {printf("sentencias  : iteracion \n");}
     | decision              {printf("sentencias  : decision\n");}
-    | WRITE expresion FL    {printf("sentencia: WRITE expresion FL"); apilarPolaca("WRITE");}
-    | WRITE concatenacion FL {printf("sentencia: WRITE expresion FL"); apilarPolaca("WRITE");}
+    | WRITE expresion FL    {printf("sentencia: WRITE expresion FL"); apilarPolaca("WRITE");resetTipos();}
+    | WRITE concatenacion FL {printf("sentencia: WRITE expresion FL"); apilarPolaca("WRITE");resetTipos();}
     ;
 decision
    : IF P_A condicion P_C L_A sentencias L_C {printf("decision   : IF P_A condicion P_C L_A sentencias L_C\n");
@@ -355,6 +355,7 @@ asignacion
                                         if(strcmp(auxSymbol.tipo,"string")!=0 ){ auxSymbol = nullSymbol; yyerror("Tipos incompatibles");}
                                         //validarTipos("string");
                                         printf("acá hay que validar asignacion : ID ASIG concatenacion \n");
+                                        validarTipos("string");
                                         apilarPolaca($1);
                                         apilarPolaca("=");
                                     }
@@ -930,10 +931,10 @@ void generarWRITE(){
     auxSymbol = getSymbol(strOpe);
     //fprintf(ArchivoAsm,"\n %s \n", auxSymbol.tipo);
     if(strcmp(auxSymbol.tipo,"float")==0){
-        fprintf(ArchivoAsm,"\tdisplayFloat @%s, 5\n",&auxSymbol.nombre[1]);
+        fprintf(ArchivoAsm,"\tdisplayFloat @%s, 2\n",&auxSymbol.nombre[1]);
     } else
     if(strcmp(auxSymbol.tipo,"cfloat")==0){
-        fprintf(ArchivoAsm,"\tdisplayFloat %s, 5\n",auxSymbol.nombre);
+        fprintf(ArchivoAsm,"\tdisplayFloat %s, 2\n",auxSymbol.nombre);
     } else if (strcmp(auxSymbol.tipo,"string")==0){
         fprintf(ArchivoAsm,"\n\tLEA DX, @%s \n",&auxSymbol.nombre[1]);
         fprintf(ArchivoAsm,"\tMOV AH, 9\n");
@@ -943,6 +944,7 @@ void generarWRITE(){
         fprintf(ArchivoAsm,"\tMOV AH, 9\n");
         fprintf(ArchivoAsm,"\tINT 21H\n");
     }
+        fprintf(ArchivoAsm,"\tnewline\n");
 }
 
 void generarADD(){
