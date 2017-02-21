@@ -291,6 +291,7 @@ sentencia
     | iteracion             {printf("sentencias  : iteracion \n");}
     | decision              {printf("sentencias  : decision\n");}
     | WRITE expresion FL    {printf("sentencia: WRITE expresion FL"); apilarPolaca("WRITE");}
+    | WRITE concatenacion FL {printf("sentencia: WRITE expresion FL"); apilarPolaca("WRITE");}
     ;
 decision
    : IF P_A condicion P_C L_A sentencias L_C {printf("decision   : IF P_A condicion P_C L_A sentencias L_C\n");
@@ -459,7 +460,7 @@ constanteNumerica
     | BINA                           {validarBin(yylval.s);printf("constante : BINA: %s\n" , yylval.s); apilarPolaca(yylval.s);}
     ;
 constanteString
-    : STRING_CONST                   {validarString(yylval.s);printf("constante : STRING \n" , yylval.s);apilarPolaca(yylval.s);}
+    : STRING_CONST                   {validarString(yylval.s);printf("constante : STRING \n" , yylval.s);}
     ;
 %%
 
@@ -545,6 +546,7 @@ int validarString(char cadena[]) {
     //guardarenTS();
     saveSymbol(sincomillas,"cString", NULL);
     insertarTipo("string");
+    apilarPolaca(sincomillas);
 /*
     // Bloque para debug
     printf("***************************\n");
@@ -925,9 +927,9 @@ void generarWRITE(){
     desapilarOperando();
     auxSymbol = getSymbol(strOpe);
 
-    fprintf(ArchivoAsm,"\n\tLEA DX, \n");
-    fprintf(ArchivoAsm,"\n\tMOV AH, 9\n");
-    fprintf(ArchivoAsm,"\n\tINR 21H\n");
+    fprintf(ArchivoAsm,"\n\tLEA DX, %s \n",auxSymbol.nombre);
+    fprintf(ArchivoAsm,"\tMOV AH, 9\n");
+    fprintf(ArchivoAsm,"\tINT 21H\n");
 }
 
 void generarADD(){
