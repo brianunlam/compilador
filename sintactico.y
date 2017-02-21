@@ -56,6 +56,7 @@ void apilarWhile(int pos);
 int desapilarWhile();
 
 void apilarPolaca(char *strToken);
+void trampearPolaca(char *strToken);
 void insertarPolaca(char *s, int p);
 void generarEtiqueta();
 void apilarEtiqueta(char *strEtiq);
@@ -375,7 +376,7 @@ concatenacion
     | ID OP_CONCAT constanteString     {auxSymbol = getSymbol($1);
                                         if(strcmp(auxSymbol.tipo,"string")!=0 ){ auxSymbol = nullSymbol; yyerror("Tipos incompatibles");}
                                         printf("acá hay que validar concatenacion: ID OP_CONCAT constanteString");
-                                        apilarPolaca($1);
+                                        trampearPolaca($1);
                                         validarTipos("string");
                                         apilarPolaca("++");
                                        }
@@ -388,6 +389,7 @@ concatenacion
                                         }
     | constanteString OP_CONCAT constanteString {validarTipos("string");apilarPolaca("++");}
     | constanteString                   {/*validarTipos("string");*/;}
+
     ;
 condicion
     : expresion CMP_MAY expresion    {printf("condicion  : expresion CMP_MAY expresion \n");
@@ -762,6 +764,13 @@ void apilarPolaca(char *strToken){
    	/*if (c != EOF )
 			fprintf(ArchivoPolaca, ",");*/
 }
+
+void trampearPolaca(char *strToken){
+    strcpy(pilaPolaca[posPolaca],pilaPolaca[posPolaca-1]);
+    strcpy(pilaPolaca[posPolaca-1],strToken);
+    posPolaca++;
+}
+
 
 void insertarPolaca(char *strToken, int pos){
     strcpy(pilaPolaca[pos],strToken);

@@ -4,7 +4,14 @@ b : float
 c : float
 y : float
 d : string
-bri : string
+pri : string
 ccc : string
+laf : string
+seg : string
 ENDDEF
-bri:= "bria";
+pri:= "bria";
+seg:="n";
+ccc:= pri ++ seg;
+laf:= pri ++ "despues";
+write ccc;
+write laf;
