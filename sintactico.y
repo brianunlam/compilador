@@ -520,7 +520,7 @@ int validarBin(char binario[]){
     char *ptr ;//puntero que misteriosamente usa esta funcion
     long casteado = strtol(binario+2, &ptr, 2);
     sprintf(binFloat,"%d",casteado);
-    printf ("############### %s\n",binFloat);
+
     char msg[100];
     if(casteado < -32768 || casteado > 32767) {
         sprintf(msg, "ERROR: Entero %d fuera de rango. Debe estar entre [-32768; 32767]\n", casteado);
@@ -554,6 +554,7 @@ int validarString(char cadena[]) {
     //guardarenTS();
     saveSymbol(sincomillas,"cString", NULL);
     insertarTipo("string");
+    reemplazarBlancos(sincomillas);
     apilarPolaca(sincomillas);
 /*
     // Bloque para debug
@@ -1004,11 +1005,11 @@ fprintf(p,"END START; final del archivo. \n");
 void generarCONC(){
 
 	desapilarOperando();	//segundo operando en strOpe
-    printf("#### %s\n",strOpe);
+
     reemplazarBlancos(strOpe);
     auxSymbol = getSymbol(strOpe);
     desapilarOperando();
-    printf("#### %s\n",strOpe);
+
     reemplazarBlancos(strOpe);
     auxSymbol2 = getSymbol(strOpe);
 
@@ -1220,7 +1221,7 @@ void generarMOD(){
     fprintf(ArchivoAsm,"\tfstsw ax\n");
     fprintf(ArchivoAsm,"\ttest ah, 100b\n");
     fprintf(ArchivoAsm,"\tjnz ParialLp\n");
-
+    fprintf(ArchivoAsm,"\tfabs\n");
 
 //    fprintf(ArchivoAsm,"\tfstp __result\n");
 //    apilarOperando("__result");

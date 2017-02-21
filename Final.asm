@@ -25,8 +25,14 @@ vtext db 100 dup('$')
 	@ccc	db	MAXTEXTSIZE dup (?),'$'
 	@laf	db	MAXTEXTSIZE dup (?),'$'
 	@seg	db	MAXTEXTSIZE dup (?),'$'
+	_concatena_dos_cadenas	db	'Concatena dos cadenas','$',28 dup (?)
+	_hola	db	'Hola','$',45 dup (?)
+	__mundo_	db	' mundo!','$',42 dup (?)
+	_solo_los_impares_usando_mod	db	'Solo los impares usando MOD','$',22 dup (?)
+	_0	dd	0.000000
 	_10	dd	10.000000
-	_ob10	dd	2.000000
+	_2	dd	2.000000
+	_1	dd	1.000000
 
 .CODE
 START:
@@ -40,22 +46,66 @@ START:
 
 ;Comienzo codigo de usuario
 
-	fld _ob10
-	fld _10
-	fdiv St(0),St(1)
-	fstcw oldcw
-	fwait
-	mov ax,oldcw
-	and ax,0F3FFh 
-	or ax,0C00h 
-	push eax
-	fldcw [esp]
-	frndint
-	fldcw oldcw
-	pop eax
+
+	LEA DX, _concatena_dos_cadenas 
+	MOV AH, 9
+	INT 21H
+	newline
+	MOV SI, OFFSET _hola
+	MOV DI, OFFSET @pri
+	call COPIAR
+	MOV SI, OFFSET __mundo_
+	MOV DI, OFFSET @ccc
+	call COPIAR
+	MOV SI, OFFSET @pri
+	MOV DI, OFFSET __auxConc
+	CALL COPIAR
+	MOV SI, OFFSET @ccc
+	MOV DI, OFFSET __auxConc
+	CALL CONCAT
+	MOV SI, OFFSET __auxConc
+	MOV DI, OFFSET @seg
+	CALL COPIAR
+
+	LEA DX, @seg 
+	MOV AH, 9
+	INT 21H
+	newline
+
+	LEA DX, _solo_los_impares_usando_mod 
+	MOV AH, 9
+	INT 21H
+	newline
+	fld _0
 	fstp @a
+@@etiq1:
+	fld _10
+	fcomp @a
+	fstsw AX
+	sahf
+	JNA @@etiq2
+	fld _2
+	fld @a
+ParialLp:	fprem1
+	fstsw ax
+	test ah, 100b
+	jnz ParialLp
+	fabs
+	fstp @b
+	fld _0
+	fcomp @b
+	fstsw AX
+	sahf
+	JNB @@etiq3
 	displayFloat @a, 2
 	newline
+@@etiq3:
+	fld _1
+	fld @a
+	fadd St(0),St(1)
+	fstp @a
+	jmp @@etiq1
+@@etiq2:
 
 ;finaliza el asm
  	mov ah,4ch

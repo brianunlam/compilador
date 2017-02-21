@@ -9,6 +9,17 @@ ccc : string
 laf : string
 seg : string
 ENDDEF
-
-a:= 10 DIV Ob10;
-write a;
+write "Concatena dos cadenas";
+pri := "Hola";
+ccc := " mundo!";
+seg := pri ++ ccc;
+write seg;
+write "Solo los impares usando MOD";
+a:=0;
+while(a < 10){
+b:= a MOD 2;
+if(b>0){
+    write a;
+}
+a:= a + 1 ;
+}
