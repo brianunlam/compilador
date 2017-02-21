@@ -875,6 +875,8 @@ void apilarOperando(char *strOp){
 
 
 void imprimirHeader(FILE *p){
+    fprintf(p,"include macros2.asm\n");
+    fprintf(p,"include number.asm\n");
     fprintf(p,".MODEL LARGE\n.386\n.STACK 200h\n\n.DATA\n\tMAXTEXTSIZE equ 50\n ");
 //    fprintf(p,"\t__result dd ? \n" );
     fprintf(p,"\t__flags dw ? \n" );
@@ -926,10 +928,21 @@ void imprimirFin(FILE *p){
 void generarWRITE(){
     desapilarOperando();
     auxSymbol = getSymbol(strOpe);
-
-    fprintf(ArchivoAsm,"\n\tLEA DX, %s \n",auxSymbol.nombre);
-    fprintf(ArchivoAsm,"\tMOV AH, 9\n");
-    fprintf(ArchivoAsm,"\tINT 21H\n");
+    //fprintf(ArchivoAsm,"\n %s \n", auxSymbol.tipo);
+    if(strcmp(auxSymbol.tipo,"float")==0){
+        fprintf(ArchivoAsm,"\tdisplayFloat @%s, 5\n",&auxSymbol.nombre[1]);
+    } else
+    if(strcmp(auxSymbol.tipo,"cfloat")==0){
+        fprintf(ArchivoAsm,"\tdisplayFloat %s, 5\n",auxSymbol.nombre);
+    } else if (strcmp(auxSymbol.tipo,"string")==0){
+        fprintf(ArchivoAsm,"\n\tLEA DX, @%s \n",&auxSymbol.nombre[1]);
+        fprintf(ArchivoAsm,"\tMOV AH, 9\n");
+        fprintf(ArchivoAsm,"\tINT 21H\n");
+    } else {
+        fprintf(ArchivoAsm,"\n\tLEA DX, %s \n",auxSymbol.nombre);
+        fprintf(ArchivoAsm,"\tMOV AH, 9\n");
+        fprintf(ArchivoAsm,"\tINT 21H\n");
+    }
 }
 
 void generarADD(){

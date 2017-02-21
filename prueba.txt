@@ -5,4 +5,5 @@ c : float
 y : float
 d : string
 ENDDEF
-write "hola";
+a:=999;
+write a;

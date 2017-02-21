@@ -1,24 +1,26 @@
+include macros2.asm
+include number.asm
 .MODEL LARGE
 .386
 .STACK 200h
 
 .DATA
 	MAXTEXTSIZE equ 50
- 	__flags dw ? 
-	__descar dd ? 
+ 	__flags dw ?
+	__descar dd ?
 	__auxConc db MAXTEXTSIZE dup (?), '$'
 	__resultConc db MAXTEXTSIZE dup (?), '$'
 	msgPRESIONE db 0DH, 0AH,'Presione una tecla para continuar...','$'
 	_newLine db 0Dh, 0Ah,'$'
 vtext db 100 dup('$')
- 
+
 ;Declaracion de variables de usuario
 	@a	dd	?
 	@b	dd	?
 	@c	dd	?
 	@y	dd	?
 	@d	db	MAXTEXTSIZE dup (?),'$'
-	_hola	db	'hola','$',45 dup (?)
+	_999	dd	999.000000
 
 .CODE
 START:
@@ -30,10 +32,9 @@ START:
 
 ;Comienzo codigo de usuario
 
-
-	LEA DX, _hola 
-	MOV AH, 9
-	INT 21H
+	fld _999
+	fstp @a
+	displayFloat @a, 2
 
 ;finaliza el asm
  	mov ah,4ch
