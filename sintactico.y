@@ -302,7 +302,7 @@ decision
        printf("fin del then\n");
        generarEtiqueta();//fin
        apilarPolaca(Etiqueta);//fin
-       apilarPolaca("BI");
+       apilarPolaca("JMP");
        desapilarEtiqueta();
        strcat(EtiqDesa,":");
        apilarPolaca(EtiqDesa);
@@ -337,7 +337,7 @@ iteracion
                                                     printf("iteracion  : WHILE P_A condicion P_C L_A sentencias\n");
                                                      desapilarEtiquetaW();
                                                      apilarPolaca(EtiqDesaW);//inicio
-                                                     apilarPolaca("BI");
+                                                     apilarPolaca("JMP");
                                                      desapilarEtiqueta();
                                                      strcat(EtiqDesa,":");
                                                      apilarPolaca(EtiqDesa);
@@ -389,7 +389,7 @@ condicion
                                         generarEtiqueta();
                                         apilarEtiqueta(Etiqueta);
                                         apilarPolaca(Etiqueta);
-                                        apilarPolaca("BLE");
+                                        apilarPolaca("JNB");
                                     }
     | expresion CMP_MEN expresion    {printf("condicion  | expresion CMP_MEN expresion \n");
                                         validarTipos("float");
@@ -397,7 +397,7 @@ condicion
                                         generarEtiqueta();
                                         apilarEtiqueta(Etiqueta);
                                         apilarPolaca(Etiqueta);
-                                        apilarPolaca("BGE");
+                                        apilarPolaca("JNA");
                                         }
     | expresion CMP_MAYI expresion   {printf("condicion  :  \n");
                                         validarTipos("float");
@@ -405,7 +405,7 @@ condicion
                                         generarEtiqueta();
                                         apilarEtiqueta(Etiqueta);
                                         apilarPolaca(Etiqueta);
-                                        apilarPolaca("BLT");
+                                        apilarPolaca("JNBE");
                                     }
     | expresion CMP_MENI expresion   {printf("condicion  : CMP_MENI expresion   \n");
                                         validarTipos("float");
@@ -413,7 +413,7 @@ condicion
                                         generarEtiqueta();
                                         apilarEtiqueta(Etiqueta);
                                         apilarPolaca(Etiqueta);
-                                        apilarPolaca("BGT");
+                                        apilarPolaca("JNAE");
                                     }
     | expresion CMP_DIST expresion   {printf("condicion  : CMP_DIST expresion   \n");
                                         validarTipos("float");
@@ -421,7 +421,7 @@ condicion
                                         generarEtiqueta();
                                         apilarEtiqueta(Etiqueta);
                                         apilarPolaca(Etiqueta);
-                                        apilarPolaca("BEQ");
+                                        apilarPolaca("JE");
                                     }
     | expresion CMP_IGUAL expresion  {printf("condicion  : CMP_IGUAL expresion  \n");
                                         validarTipos("float");
@@ -429,7 +429,7 @@ condicion
                                         generarEtiqueta();
                                         apilarEtiqueta(Etiqueta);
                                         apilarPolaca(Etiqueta);
-                                        apilarPolaca("BNE");
+                                        apilarPolaca("JNZ");
                                     }
     ;
 expresion
@@ -1032,9 +1032,45 @@ void generarMUL(){
 //    apilarOperando("__result");
 }
 
+void generarSalto(){
+    desapilarOperando();
+    // en strOpe la etiqueta a donde hay que saltar;
+    fprintf(ArchivoAsm,"\tjmp %s\n",strOpe); //fld qword ptr ds:[_%s]\n
+}
+
 void generarCMP(){
-//para if
-//desapilo lo que hay que comparar
+    desapilarOperando();
+    auxSymbol = getSymbol(strOpe);
+
+    desapilarOperando();
+    char salto[50];
+    char label[50];
+    auxSymbol2 = getSymbol(strOpe);
+
+    if(strcmp(auxSymbol.tipo,"cfloat")==0){
+        fprintf(ArchivoAsm,"\tfld %s\n",auxSymbol.nombre); //fld qword ptr ds:[_%s]\n
+    }
+    if(strcmp(auxSymbol.tipo,"float")==0){
+        fprintf(ArchivoAsm,"\tfld @%s\n",&auxSymbol.nombre[1]); //fld qword ptr ds:[_%s]\n
+    }
+    if(strcmp(auxSymbol2.tipo,"cfloat")==0){
+        fprintf(ArchivoAsm,"\tfcomp %s\n",auxSymbol2.nombre); //fld qword ptr ds:[_%s]\n
+    }
+    if(strcmp(auxSymbol2.tipo,"float")==0){
+        fprintf(ArchivoAsm,"\tfcomp @%s\n",&auxSymbol2.nombre[1]); //fld qword ptr ds:[_%s]\n
+    }
+
+    fgets(label,sizeof(label),ArchivoPolaca);
+    fgets(salto,sizeof(salto),ArchivoPolaca);
+    strtok(salto,"\n");
+    strtok(label,"\n");
+    fprintf(ArchivoAsm,"\tfstsw AX\n");
+    fprintf(ArchivoAsm,"\tsahf\n");
+
+    fprintf(ArchivoAsm,"\t%s %s\n",salto, label);
+    //aca leo el archivo directo, y saco el saltador y saco la etiqueta a donde salta
+
+
 
 }
 
@@ -1152,8 +1188,12 @@ while(fgets(linea,sizeof(linea),ArchivoPolaca)!=NULL){
                     if(strcmp(linea,"READ\n") == 0)
         ;//              generarREAD();
                     else
+                        if (strcmp(linea, "JMP\n")==0)
+                            generarSalto();
                         if( strcmp(linea,"CMP\n")==0)
                             generarCMP();
+                            if(strstr(linea,":")!=NULL && strstr(linea,"@@etiq")!=NULL )
+                                fprintf(ArchivoAsm,linea);
                             else
                               apilarOperando(linea);
 /*                    	if( strcmp(linea,"==\n") == 0
