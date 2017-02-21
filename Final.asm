@@ -24,9 +24,8 @@ vtext db 100 dup('$')
 	@ccc	db	MAXTEXTSIZE dup (?),'$'
 	@laf	db	MAXTEXTSIZE dup (?),'$'
 	@seg	db	MAXTEXTSIZE dup (?),'$'
-	_bria	db	'bria','$',45 dup (?)
-	_n	db	'n','$',48 dup (?)
-	_despues	db	'despues','$',42 dup (?)
+	_10	dd	10.000000
+	_3	dd	3.000000
 
 .CODE
 START:
@@ -40,39 +39,14 @@ START:
 
 ;Comienzo codigo de usuario
 
-	MOV SI, OFFSET _bria
-	MOV DI, OFFSET @pri
-	call COPIAR
-	MOV SI, OFFSET _n
-	MOV DI, OFFSET @seg
-	call COPIAR
-	MOV SI, OFFSET @pri
-	MOV DI, OFFSET __auxConc
-	CALL COPIAR
-	MOV SI, OFFSET @seg
-	MOV DI, OFFSET __auxConc
-	CALL CONCAT
-	MOV SI, OFFSET __auxConc
-	MOV DI, OFFSET @ccc
-	CALL COPIAR
-	MOV SI, OFFSET @pri
-	MOV DI, OFFSET __auxConc
-	CALL COPIAR
-	MOV SI, OFFSET _despues
-	MOV DI, OFFSET __auxConc
-	CALL CONCAT
-	MOV SI, OFFSET __auxConc
-	MOV DI, OFFSET @laf
-	CALL COPIAR
-
-	LEA DX, @ccc 
-	MOV AH, 9
-	INT 21H
-	newline
-
-	LEA DX, @laf 
-	MOV AH, 9
-	INT 21H
+	fld _3
+	fld _10
+ParialLp:	fprem1
+	fstsw ax
+	test ah, 100b
+	jnz ParialLp
+	fstp @a
+	displayFloat @a, 2
 	newline
 
 ;finaliza el asm

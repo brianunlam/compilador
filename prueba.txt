@@ -9,9 +9,6 @@ ccc : string
 laf : string
 seg : string
 ENDDEF
-pri:= "bria";
-seg:="n";
-ccc:= pri ++ seg;
-laf:= pri ++ "despues";
-write ccc;
-write laf;
+
+a:= 10 MOD 3;
+write a;

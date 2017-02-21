@@ -1161,6 +1161,46 @@ void generarMUL(){
 //    apilarOperando("__result");
 }
 
+
+void generarMOD(){
+
+    desapilarOperando();
+    auxSymbol = getSymbol(strOpe);
+
+    desapilarOperando();
+    auxSymbol2 = getSymbol(strOpe);
+    if(strcmp(auxSymbol.tipo,"cfloat")==0){
+        fprintf(ArchivoAsm,"\tfld %s\n",auxSymbol.nombre); //fld qword ptr ds:[_%s]\n
+    }
+    if(strcmp(auxSymbol.tipo,"float")==0){
+        fprintf(ArchivoAsm,"\tfld @%s\n",&auxSymbol.nombre[1]); //fld qword ptr ds:[_%s]\n
+    }
+    if(strcmp(auxSymbol2.tipo,"cfloat")==0){
+        fprintf(ArchivoAsm,"\tfld %s\n",auxSymbol2.nombre); //fld qword ptr ds:[_%s]\n
+    }
+    if(strcmp(auxSymbol2.tipo,"float")==0){
+        fprintf(ArchivoAsm,"\tfld @%s\n",&auxSymbol2.nombre[1]); //fld qword ptr ds:[_%s]\n
+    }
+
+
+    fprintf(ArchivoAsm,"ParialLp:\tfprem1\n");
+    fprintf(ArchivoAsm,"\tfstsw ax\n");
+    fprintf(ArchivoAsm,"\ttest ah, 100b\n");
+    fprintf(ArchivoAsm,"\tjnz ParialLp\n");
+
+
+//    fprintf(ArchivoAsm,"\tfstp __result\n");
+//    apilarOperando("__result");
+}
+
+
+
+
+
+
+
+
+
 void generarSalto(){
     desapilarOperando();
     // en strOpe la etiqueta a donde hay que saltar;
@@ -1330,8 +1370,8 @@ while(fgets(linea,sizeof(linea),ArchivoPolaca)!=NULL){
                   if( strcmp(linea,"WRITE\n") == 0 )
                     generarWRITE();
                   else
-                    if(strcmp(linea,"READ\n") == 0)
-        ;//              generarREAD();
+                    if(strcmp(linea,"MOD\n") == 0)
+                      generarMOD();
                     else
                         if (strcmp(linea, "JMP\n")==0)
                             generarSalto();
