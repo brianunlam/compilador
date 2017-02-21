@@ -8,6 +8,7 @@ include number.asm
 	MAXTEXTSIZE equ 50
  	__flags dw ? 
 	__descar dd ? 
+	oldcw dw ? 
 	__auxConc db MAXTEXTSIZE dup (?), '$'
 	__resultConc db MAXTEXTSIZE dup (?), '$'
 	msgPRESIONE db 0DH, 0AH,'Presione una tecla para continuar...','$'
@@ -41,10 +42,17 @@ START:
 
 	fld _3
 	fld _10
-ParialLp:	fprem1
-	fstsw ax
-	test ah, 100b
-	jnz ParialLp
+	fdiv St(0),St(1)
+	fstcw oldcw
+	fwait
+	mov ax,oldcw
+	and ax,0F3FFh 
+	or ax,0C00h 
+	push eax
+	fldcw [esp]
+	frndint
+	fldcw oldcw
+	pop eax
 	fstp @a
 	displayFloat @a, 2
 	newline

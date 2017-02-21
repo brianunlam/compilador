@@ -896,6 +896,7 @@ void imprimirHeader(FILE *p){
 //    fprintf(p,"\t__result dd ? \n" );
     fprintf(p,"\t__flags dw ? \n" );
     fprintf(p,"\t__descar dd ? \n" );
+    fprintf(p,"\toldcw dw ? \n" );
     fprintf(p,"\t__auxConc db MAXTEXTSIZE dup (?), '$'\n" );
     fprintf(p,"\t__resultConc db MAXTEXTSIZE dup (?), '$'\n" );
     fprintf(p,"\tmsgPRESIONE db 0DH, 0AH,'Presione una tecla para continuar...','$'\n");
@@ -1108,7 +1109,39 @@ void generarREST(){
 //    fprintf(ArchivoAsm,"\tfstp __result\n");
 //    apilarOperando("__result");
 }
+void generarDIVI(){
+    desapilarOperando();
+    auxSymbol = getSymbol(strOpe);
 
+    desapilarOperando();
+    auxSymbol2 = getSymbol(strOpe);
+    if(strcmp(auxSymbol.tipo,"cfloat")==0){
+        fprintf(ArchivoAsm,"\tfld %s\n",auxSymbol.nombre); //fld qword ptr ds:[_%s]\n
+    }
+    if(strcmp(auxSymbol.tipo,"float")==0){
+        fprintf(ArchivoAsm,"\tfld @%s\n",&auxSymbol.nombre[1]); //fld qword ptr ds:[_%s]\n
+    }
+    if(strcmp(auxSymbol2.tipo,"cfloat")==0){
+        fprintf(ArchivoAsm,"\tfld %s\n",auxSymbol2.nombre); //fld qword ptr ds:[_%s]\n
+    }
+    if(strcmp(auxSymbol2.tipo,"float")==0){
+        fprintf(ArchivoAsm,"\tfld @%s\n",&auxSymbol2.nombre[1]); //fld qword ptr ds:[_%s]\n
+    }
+
+    fprintf(ArchivoAsm,"\tfdiv St(0),St(1)\n");
+
+    fprintf(ArchivoAsm,"\tfstcw oldcw\n");
+    fprintf(ArchivoAsm,"\tfwait\n");
+    fprintf(ArchivoAsm,"\tmov ax,oldcw\n");
+    fprintf(ArchivoAsm,"\tand ax,0F3FFh \n");
+    fprintf(ArchivoAsm,"\tor ax,0C00h \n");
+
+    fprintf(ArchivoAsm,"\tpush eax\n");
+    fprintf(ArchivoAsm,"\tfldcw [esp]\n");
+    fprintf(ArchivoAsm,"\tfrndint\n");
+    fprintf(ArchivoAsm,"\tfldcw oldcw\n");
+    fprintf(ArchivoAsm,"\tpop eax\n");
+}
 
 void generarDIV(){
 
@@ -1360,6 +1393,9 @@ while(fgets(linea,sizeof(linea),ArchivoPolaca)!=NULL){
 
             if( strcmp(linea,"/\n") == 0 )
               generarDIV();
+            else
+            if( strcmp(linea,"DIV\n") == 0 )
+              generarDIVI();
             else
               if( strcmp(linea,"++\n") == 0 )
                 generarCONC();

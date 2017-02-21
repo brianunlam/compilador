@@ -10,5 +10,5 @@ laf : string
 seg : string
 ENDDEF
 
-a:= 10 MOD 3;
+a:= 10 DIV 3;
 write a;
