@@ -17,6 +17,7 @@ int topePilaAsm = 0;
 char strPila[1000][50];
 char strOpe[50];
 char strConc[50];
+char strNombre[50];
 FILE *ArchivoAsm;
 void reemplazarBlancos(char *cad);
 void desapilarOperando();
@@ -367,11 +368,14 @@ concatenacion
                                         if(strcmp(auxSymbol.tipo,"string")!=0 ){ auxSymbol = nullSymbol; yyerror("Tipos incompatibles");}
                                         validarTipos("string");
                                         printf("acá hay que validar concatenacion: ID OP_CONCAT ID");
+                                        apilarPolaca($1);
+                                        apilarPolaca($3);
                                         apilarPolaca("++");
                                        }
     | ID OP_CONCAT constanteString     {auxSymbol = getSymbol($1);
                                         if(strcmp(auxSymbol.tipo,"string")!=0 ){ auxSymbol = nullSymbol; yyerror("Tipos incompatibles");}
                                         printf("acá hay que validar concatenacion: ID OP_CONCAT constanteString");
+                                        apilarPolaca($1);
                                         validarTipos("string");
                                         apilarPolaca("++");
                                        }
@@ -379,6 +383,7 @@ concatenacion
                                         if(strcmp(auxSymbol.tipo,"string")!=0 ){ auxSymbol = nullSymbol; yyerror("Tipos incompatibles");}
                                         printf("acá hay que validar concatenacion: constanteString OP_CONCAT ID");
                                         validarTipos("string");
+                                        apilarPolaca($3);
                                         apilarPolaca("++");
                                         }
     | constanteString OP_CONCAT constanteString {validarTipos("string");apilarPolaca("++");}
@@ -894,9 +899,68 @@ void imprimirFin(FILE *p){
     fprintf(p,"\tmov ah,4ch\n" );
     fprintf(p,"\tmov al,0\n" );
     fprintf(p,"\tint 21h\n" );
-    fprintf(p,"\n\nEND START" );
+    //fprintf(p,"\n\nEND START" );
 }
 
+void imprimirProcs(FILE *p){
+
+fprintf(p,"\nSTRLEN PROC NEAR\n");
+fprintf(p,"\tmov BX,0\n");
+fprintf(p,"\nSTRL01:\n");
+fprintf(p,"\tcmp BYTE PTR [SI+BX],'$'\n");
+fprintf(p,"\tje STREND\n");
+fprintf(p,"\tinc BX\n");
+fprintf(p,"\tjmp STRL01\n");
+fprintf(p,"\nSTREND:\n");
+fprintf(p,"\tret\n");
+fprintf(p,"\nSTRLEN ENDP\n");
+fprintf(p,"\nCOPIAR PROC NEAR\n");
+fprintf(p,"\tcall STRLEN\n");
+fprintf(p,"\tcmp BX,MAXTEXTSIZE\n");
+fprintf(p,"\tjle COPIARSIZEOK\n");
+fprintf(p,"\tmov BX,MAXTEXTSIZE\n");
+fprintf(p,"\nCOPIARSIZEOK:\n");
+fprintf(p,"\tmov CX,BX\n");
+fprintf(p,"\tcld\n");
+fprintf(p,"\trep movsb\n");
+fprintf(p,"\tmov al,'$'\n");
+fprintf(p,"\tmov BYTE PTR [DI],al\n");
+fprintf(p,"\tret\n");
+fprintf(p,"\nCOPIAR ENDP\n");
+fprintf(p,"\nCONCAT PROC NEAR\n");
+fprintf(p,"\tpush ds\n");
+fprintf(p,"\tpush si\n");
+fprintf(p,"\tcall STRLEN\n");
+fprintf(p,"\tmov dx,bx\n");
+fprintf(p,"\tmov si,di\n");
+fprintf(p,"\tpush es\n");
+fprintf(p,"\tpop ds\n");
+fprintf(p,"\tcall STRLEN\n");
+fprintf(p,"\tadd di,bx\n");
+fprintf(p,"\tadd bx,dx\n");
+fprintf(p,"\tcmp bx,MAXTEXTSIZE\n");
+fprintf(p,"\tjg CONCATSIZEMAL\n");
+fprintf(p,"\nCONCATSIZEOK:\n");
+fprintf(p,"\tmov cx,dx\n");
+fprintf(p,"\tjmp CONCATSIGO\n");
+fprintf(p,"\nCONCATSIZEMAL:\n");
+fprintf(p,"\tsub bx,MAXTEXTSIZE\n");
+fprintf(p,"\tsub dx,bx\n");
+fprintf(p,"\tmov cx,dx\n");
+fprintf(p,"\nCONCATSIGO:\n");
+fprintf(p,"\tpush ds\n");
+fprintf(p,"\tpop es\n");
+fprintf(p,"\tpop si\n");
+fprintf(p,"\tpop ds\n");
+fprintf(p,"\tcld\n");
+fprintf(p,"\trep movsb\n");
+fprintf(p,"\tmov al,'$'\n");
+fprintf(p,"\tmov BYTE PTR [DI],al\n");
+fprintf(p,"\tret\n");
+fprintf(p,"\nCONCAT ENDP\n");
+fprintf(p,"END START; final del archivo. \n");
+
+}
 
 
 
@@ -925,6 +989,45 @@ void imprimirFin(FILE *p){
         }
     }
 }
+
+
+void generarCONC(){
+
+	desapilarOperando();	//segundo operando en strOpe
+    printf("#### %s\n",strOpe);
+    reemplazarBlancos(strOpe);
+    auxSymbol = getSymbol(strOpe);
+    desapilarOperando();
+    printf("#### %s\n",strOpe);
+    reemplazarBlancos(strOpe);
+    auxSymbol2 = getSymbol(strOpe);
+
+	if(strcmp(auxSymbol2.tipo,"cstring")==0){
+        fprintf(ArchivoAsm,"\tMOV SI, OFFSET %s\n",auxSymbol2.nombre);
+        fprintf(ArchivoAsm,"\tMOV DI, OFFSET __auxConc\n");
+        fprintf(ArchivoAsm,"\tCALL COPIAR\n");
+    }
+    if(strcmp(auxSymbol2.tipo,"string")==0){
+        fprintf(ArchivoAsm,"\tMOV SI, OFFSET @%s\n",&auxSymbol2.nombre[1]);
+        fprintf(ArchivoAsm,"\tMOV DI, OFFSET __auxConc\n");
+        fprintf(ArchivoAsm,"\tCALL COPIAR\n");
+    }
+    if(strcmp(auxSymbol.tipo,"cstring")==0){
+        fprintf(ArchivoAsm,"\tMOV SI, OFFSET %s\n",auxSymbol.nombre);
+    	fprintf(ArchivoAsm,"\tMOV DI, OFFSET __auxConc\n");
+    	fprintf(ArchivoAsm,"\tCALL CONCAT\n");
+    }
+    if(strcmp(auxSymbol.tipo,"string")==0){
+        fprintf(ArchivoAsm,"\tMOV SI, OFFSET @%s\n",&auxSymbol.nombre[1]);
+    	fprintf(ArchivoAsm,"\tMOV DI, OFFSET __auxConc\n");
+    	fprintf(ArchivoAsm,"\tCALL CONCAT\n");
+    }
+
+
+	fprintf(ArchivoAsm,"\tMOV SI, OFFSET __auxConc\n");
+    apilarOperando("__auxConc");
+}
+
 
 void generarWRITE(){
     desapilarOperando();
@@ -1093,28 +1196,43 @@ void generarCMP(){
 
 
 void generarASIG(){
-    int static veces = 0;
-    veces++;
-    printf("********** %d\n", veces);
-    // a := b
-    //desapilo, y busco en ts, guardo valor en aux y aux1
+
     desapilarOperando();
     auxSymbol = getSymbol(strOpe);
     desapilarOperando();
     auxSymbol2 = getSymbol(strOpe);
     printf("==== %s\n", auxSymbol.nombre);
     printf("==== %s\n", auxSymbol2.nombre);
-    if(strcmp(auxSymbol2.tipo,"cfloat")==0){
-        fprintf(ArchivoAsm,"\tfld %s\n",auxSymbol2.nombre); //fld qword ptr ds:[_%s]\n
-		fprintf(ArchivoAsm,"\tfstp @%s\n",&auxSymbol.nombre[1]); //qword ptr ds:[
+    if(strcmp(auxSymbol.tipo,"string")==0){
+        if(strcmp(auxSymbol2.tipo,"cstring")==0){
+            fprintf(ArchivoAsm,"\tMOV SI, OFFSET %s\n",auxSymbol2.nombre); //fld qword ptr ds:[_%s]\n
+    		fprintf(ArchivoAsm,"\tMOV DI, OFFSET @%s\n",&auxSymbol.nombre[1]); //qword ptr ds:[
+            fprintf(ArchivoAsm,"\tcall COPIAR\n");
+        }
+        if(strcmp(auxSymbol2.tipo,"string")==0){
+            fprintf(ArchivoAsm,"\tMOV SI, OFFSET @%s\n",&auxSymbol2.nombre[1]); //fld qword ptr ds:[_%s]\n
+    		fprintf(ArchivoAsm,"\tMOV DI, OFFSET @%s\n",&auxSymbol.nombre[1]); //qword ptr ds:[
+            fprintf(ArchivoAsm,"\tcall COPIAR\n");
+        }
+
+    }else{
+        if(strcmp(auxSymbol2.tipo,"cfloat")==0){
+            fprintf(ArchivoAsm,"\tfld %s\n",auxSymbol2.nombre); //fld qword ptr ds:[_%s]\n
+    		fprintf(ArchivoAsm,"\tfstp @%s\n",&auxSymbol.nombre[1]); //qword ptr ds:[
+        }
+        if(strcmp(auxSymbol2.tipo,"float")==0){
+            fprintf(ArchivoAsm,"\tfld @%s\n",&auxSymbol2.nombre[1]); //fld qword ptr ds:[_%s]\n
+    		fprintf(ArchivoAsm,"\tfstp @%s\n",&auxSymbol.nombre[1]); //qword ptr ds:[
+        }
+        if(strcmp(auxSymbol2.nombre,"!")==0){
+            fprintf(ArchivoAsm,"\tfstp @%s\n",&auxSymbol.nombre[1]); //qword ptr ds:[
+        }
     }
-    if(strcmp(auxSymbol2.tipo,"float")==0){
-        fprintf(ArchivoAsm,"\tfld %s\n",auxSymbol2.nombre); //fld qword ptr ds:[_%s]\n
-		fprintf(ArchivoAsm,"\tfstp @%s\n",&auxSymbol.nombre[1]); //qword ptr ds:[
+    if(strcmp("__auxConc",strOpe)==0){
+            fprintf(ArchivoAsm,"\tMOV DI, OFFSET @%s\n",&auxSymbol.nombre[1]);
+            fprintf(ArchivoAsm,"\tCALL COPIAR\n");
     }
-    if(strcmp(auxSymbol2.nombre,"!")==0){
-        fprintf(ArchivoAsm,"\tfstp @%s\n",&auxSymbol.nombre[1]); //qword ptr ds:[
-    }
+
     // a:= 1
     // a:= b /b
     // a:= b /b cadena
@@ -1173,6 +1291,7 @@ fprintf(ArchivoAsm,"\n.CODE\n");
 fprintf(ArchivoAsm,"START:\n");
 fprintf(ArchivoAsm,"\n\tMOV AX, @DATA\n");
 fprintf(ArchivoAsm,"\n\tMOV DS, AX\n");
+fprintf(ArchivoAsm,"\n\tMOV ES, AX\n");
 
 fprintf(ArchivoAsm,"\n\n;Comienzo codigo de usuario\n\n");
 
@@ -1194,7 +1313,7 @@ while(fgets(linea,sizeof(linea),ArchivoPolaca)!=NULL){
               generarDIV();
             else
               if( strcmp(linea,"++\n") == 0 )
-        ;//        generarCONC();
+                generarCONC();
               else
                 if( strcmp(linea,"=\n") == 0 )
                   generarASIG();
@@ -1207,12 +1326,14 @@ while(fgets(linea,sizeof(linea),ArchivoPolaca)!=NULL){
                     else
                         if (strcmp(linea, "JMP\n")==0)
                             generarSalto();
+                        else
                         if( strcmp(linea,"CMP\n")==0)
                             generarCMP();
+                            else
                             if(strstr(linea,":")!=NULL && strstr(linea,"@@etiq")!=NULL )
                                 fprintf(ArchivoAsm,linea);
-                            else
-                              apilarOperando(linea);
+                                else
+                                    apilarOperando(linea);
 /*                    	if( strcmp(linea,"==\n") == 0
     		                  || strcmp(linea,"<\n") == 0
     		                  || strcmp(linea,"<=\n") == 0
@@ -1237,7 +1358,7 @@ while(fgets(linea,sizeof(linea),ArchivoPolaca)!=NULL){
 
 
 imprimirFin(ArchivoAsm);
-
+imprimirProcs(ArchivoAsm);
 fclose(ArchivoAsm);
 
 }

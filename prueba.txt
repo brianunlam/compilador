@@ -4,10 +4,7 @@ b : float
 c : float
 y : float
 d : string
+bri : string
+ccc : string
 ENDDEF
-a:=0;
-while(a < 100){
-    write "chupamela";
-    write a;
-    a:= a +1 ;
-}
+bri:= "bria";

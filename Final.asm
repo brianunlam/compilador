@@ -20,10 +20,9 @@ vtext db 100 dup('$')
 	@c	dd	?
 	@y	dd	?
 	@d	db	MAXTEXTSIZE dup (?),'$'
-	_0	dd	0.000000
-	_100	dd	100.000000
-	_chupamela	db	'chupamela','$',40 dup (?)
-	_1	dd	1.000000
+	@bri	db	MAXTEXTSIZE dup (?),'$'
+	@ccc	db	MAXTEXTSIZE dup (?),'$'
+	_bria	db	'bria','$',45 dup (?)
 
 .CODE
 START:
@@ -32,35 +31,83 @@ START:
 
 	MOV DS, AX
 
+	MOV ES, AX
+
 
 ;Comienzo codigo de usuario
 
-	fld _0
-	fstp @a
-@@etiq1:
-	fld _100
-	fcomp @a
-	fstsw AX
-	sahf
-	JNA @@etiq2
-
-	LEA DX, _chupamela 
-	MOV AH, 9
-	INT 21H
-	newline
-	displayFloat @a, 2
-	newline
-	fld _1
-	fld @a
-	fadd St(0),St(1)
-	fstp @a
-	jmp @@etiq1
-@@etiq2:
+	MOV SI, OFFSET _bria
+	MOV DI, OFFSET @bri
+	call COPIAR
 
 ;finaliza el asm
  	mov ah,4ch
 	mov al,0
 	int 21h
 
+STRLEN PROC NEAR
+	mov BX,0
 
-END START
+STRL01:
+	cmp BYTE PTR [SI+BX],'$'
+	je STREND
+	inc BX
+	jmp STRL01
+
+STREND:
+	ret
+
+STRLEN ENDP
+
+COPIAR PROC NEAR
+	call STRLEN
+	cmp BX,MAXTEXTSIZE
+	jle COPIARSIZEOK
+	mov BX,MAXTEXTSIZE
+
+COPIARSIZEOK:
+	mov CX,BX
+	cld
+	rep movsb
+	mov al,'$'
+	mov BYTE PTR [DI],al
+	ret
+
+COPIAR ENDP
+
+CONCAT PROC NEAR
+	push ds
+	push si
+	call STRLEN
+	mov dx,bx
+	mov si,di
+	push es
+	pop ds
+	call STRLEN
+	add di,bx
+	add bx,dx
+	cmp bx,MAXTEXTSIZE
+	jg CONCATSIZEMAL
+
+CONCATSIZEOK:
+	mov cx,dx
+	jmp CONCATSIGO
+
+CONCATSIZEMAL:
+	sub bx,MAXTEXTSIZE
+	sub dx,bx
+	mov cx,dx
+
+CONCATSIGO:
+	push ds
+	pop es
+	pop si
+	pop ds
+	cld
+	rep movsb
+	mov al,'$'
+	mov BYTE PTR [DI],al
+	ret
+
+CONCAT ENDP
+END START; final del archivo. 
