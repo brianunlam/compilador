@@ -8,4 +8,4 @@ del primera.exe
 del lex.yy.c
 del y.tab.c
 del y.tab.h
-copy final.asm c:\dosbox\pruebas /y
+
